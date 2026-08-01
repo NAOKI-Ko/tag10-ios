@@ -29,9 +29,13 @@ app. Connect SpriteKit presentation to the existing rendering-independent
 - `Sources/TAG10App/GameScene.swift`
 - `Sources/TAG10App/ActorNode.swift`
 - `Sources/TAG10App/GameHUDNode.swift`
+- `Sources/TAG10App/ContentView.swift` (Visual QA safe-area fix)
 - `TAG10.xcodeproj/project.pbxproj`
 - `docs/IMPLEMENTATION_PLAN.md`
 - `docs/CODEX_REPORT.md`
+- `docs/evidence/phase-2a/intro.png`
+- `docs/evidence/phase-2a/playing.png`
+- `docs/evidence/phase-2a/result.png`
 
 The Phase 0/1 core source, `docs/GAME_RULES.md`, `docs/PRODUCT_SPEC.md`,
 `docs/QA_CHECKLIST.md`, and `prototype/tag10-heat.html` were not changed.
@@ -105,23 +109,61 @@ Verified tests:
 
 ## Visual Evidence
 
-No simulator screenshots were captured. `xcrun simctl list devices available`
-failed because this Codex sandbox cannot connect to CoreSimulatorService
-(`NSPOSIXErrorDomain Code=61`, connection refused). The iOS app compiled
-successfully, but intro / playing / result could not be launched for screenshots
-in this environment.
+- `docs/evidence/phase-2a/intro.png`
+- `docs/evidence/phase-2a/playing.png`
+- `docs/evidence/phase-2a/result.png`
+
+## Visual QA
+
+### Simulator Used
+
+- Device: **iPhone 17 Pro**
+- Runtime: **iOS 26.5**
+- Orientation: portrait
+- Simulator UDID: `9D870918-AC43-4F0C-9C63-49B824D22C5B`
+- Build: Debug, iOS Simulator, `CODE_SIGNING_ALLOWED=NO`
+
+### Verification Result
+
+Result after the safe-area correction: **PASS**.
+
+- HUD remains within the app content area and clear of the Dynamic Island,
+  status bar, home indicator, and screen edges.
+- PLAYER and CPU are clearly distinguished by labels, fixed positions, and
+  separate cyan/orange actor bodies.
+- IT is independently identifiable through the `IT` text, bomb/fuse marker,
+  and pulsing ring in addition to color.
+- Recorded execution transitioned normally from FIGHT to PLAYING to LOSE.
+- The 10.0-second timer is centered, unobstructed, and readable.
+- During the final three seconds, the timer switches to a large red integer and
+  remains unobstructed.
+- The LOSE result is immediately recognizable through a large red result title
+  and the explanatory `YOU HELD THE BOMB AT 0` text. The WIN presentation uses
+  the same verified layout path with the engine-selected result styling.
+- No portrait layout overlap or clipping remains on the tested iPhone size.
+
+### Issues Found
+
+Initial run: the SpriteKit view ignored all safe areas, placing the HUD timer
+under the Dynamic Island and status bar. This made the 10-second timer and final
+three-second countdown partially invisible.
+
+### Fix Required
+
+**Yes — fixed and re-verified.** `ContentView` now keeps `SpriteView` inside the
+safe area while the dark background alone extends edge-to-edge. No gameplay
+logic, balance value, visual effect, or Phase 2B feature was changed. No further
+Visual QA blocker was found after the second run.
 
 ## Deviations
 
 - No gameplay rule or balance constant was changed.
 - The standard `xcodebuild test` runner is blocked by the execution sandbox; the
   exact compiled XCTest bundle passed all 13 tests with direct `xctest`.
-- Simulator screenshots are omitted because CoreSimulatorService is unavailable.
 
 ## Unresolved
 
-- Simulator or physical-device visual verification of intro, playing, and
-  result presentation.
+- Physical-device visual verification.
 - Standard `xcodebuild test` execution outside the restricted Codex sandbox.
 - Phase 2B visual polish.
 - Player controls, CPU AI, additional stages, movement speed application,
@@ -139,6 +181,5 @@ the HTML visual reference.
 
 ## Next Suggested Step
 
-Review the Phase 2A commit and visually verify intro / playing / result on an
-iOS Simulator or device. Begin Phase 2B only after explicit approval; do not
-proceed to Phase 2B or Phase 3 implicitly.
+Review the Phase 2A Visual QA evidence and safe-area correction. Begin Phase 2B
+only after explicit approval; do not proceed to Phase 2B or Phase 3 implicitly.
