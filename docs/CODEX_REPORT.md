@@ -1,48 +1,40 @@
-# CODEX REPORT — Phase 0 / Phase 1
+# CODEX REPORT — Phase 2A
 
 ## Objective
 
-Create the native iOS foundation for TAG10 and implement the testable game core
-defined by Phase 0 and Phase 1 of `IMPLEMENTATION_PLAN.md`, without proceeding
-to Phase 2.
+Implement only **Phase 2A — Visual gameplay shell** for the native TAG10 iOS
+app. Connect SpriteKit presentation to the existing rendering-independent
+`GameEngine` without changing Phase 0/1 game rules or balance values.
 
 ## Implementation
 
-- Created the `TAG10.xcodeproj` Xcode project and shared schemes.
-- Added a native iOS `TAG10` app target using SwiftUI and SpriteKit.
-- Added the cross-platform `TAG10Core` framework so game rules are independent
-  of SpriteKit rendering and can be unit tested.
-- Centralized authoritative gameplay constants in `GameConfig.swift`.
-- Implemented match phase/state, actor state, random initial IT selection,
-  timer, direct tag, stun, timer pause, tag protection, Shock arm/cooldown and
-  transfer, result determination, rating, rank, streak, and HEAT calculation.
-- Added a hostless `TAG10CoreTests` XCTest target.
-- Preserved the supplied source-of-truth documents and HTML prototype without
-  gameplay or balance changes.
+- Connected `GameScene` to one authoritative `GameEngine` match.
+- Added a FLAT-only grid arena and fixed player/CPU starting positions based on
+  the HTML reference implementation.
+- Added player and CPU actor nodes. IT is identified by an explicit `IT` label,
+  bomb marker, and pulsing ring, so the distinction does not rely on color.
+- Added the 1.1-second FIGHT presentation and transition into `.playing`.
+- Advanced the existing engine timer from the SpriteKit `update` loop. No HUD
+  timer or duplicate gameplay state was introduced.
+- Added a read-only HUD projection for remaining time, HEAT count/bonus, both
+  actors' Shock arm/cooldown state, current match state, and timer pause.
+- Added actor and HUD STUN presentation.
+- Added WIN / LOSE presentation driven by `MatchPhase.finished` and the engine's
+  result.
+- Added only minimal pulse-ring and particle-burst feedback.
+- Split the implementation plan into Phase 2A and Phase 2B.
 
 ## Changed Files
 
-- `.gitignore`
-- `AGENTS.md`
-- `README.md`
-- `TAG10.xcodeproj/project.pbxproj`
-- `TAG10.xcodeproj/xcshareddata/xcschemes/TAG10.xcscheme`
-- `TAG10.xcodeproj/xcshareddata/xcschemes/TAG10CoreTests.xcscheme`
-- `Sources/TAG10App/TAG10App.swift`
-- `Sources/TAG10App/ContentView.swift`
 - `Sources/TAG10App/GameScene.swift`
-- `Sources/TAG10Core/GameConfig.swift`
-- `Sources/TAG10Core/GameModels.swift`
-- `Sources/TAG10Core/GameEngine.swift`
-- `Sources/TAG10Core/PlayerProgress.swift`
-- `Tests/TAG10CoreTests/GameCoreTests.swift`
-- `docs/PRODUCT_SPEC.md`
-- `docs/GAME_RULES.md`
+- `Sources/TAG10App/ActorNode.swift`
+- `Sources/TAG10App/GameHUDNode.swift`
+- `TAG10.xcodeproj/project.pbxproj`
 - `docs/IMPLEMENTATION_PLAN.md`
-- `docs/QA_CHECKLIST.md`
-- `docs/PHASE_0_1_NOTES.md`
 - `docs/CODEX_REPORT.md`
-- `prototype/tag10-heat.html`
+
+The Phase 0/1 core source, `docs/GAME_RULES.md`, `docs/PRODUCT_SPEC.md`,
+`docs/QA_CHECKLIST.md`, and `prototype/tag10-heat.html` were not changed.
 
 ## Build Command and Result
 
@@ -54,21 +46,21 @@ xcodebuild \
   -scheme TAG10 \
   -configuration Debug \
   -destination 'generic/platform=iOS' \
-  -derivedDataPath work/GitVerificationDerivedData \
+  -derivedDataPath work/Phase2AFinalBuild \
   CODE_SIGNING_ALLOWED=NO \
   build
 ```
 
-Result: **PASS — BUILD SUCCEEDED** using Xcode 26.6. `TAG10Core.framework`
-was verified inside the generated app bundle.
+Result: **PASS — BUILD SUCCEEDED**.
+
+An earlier compile verification also passed with `-sdk iphonesimulator` despite
+the environment being unable to connect to a running CoreSimulator service.
 
 ## Test Commands and Results
 
-The source contains **13 XCTest methods**. The prior chat report incorrectly
-listed 14 descriptive items while stating 13 tests; 13 is the verified XCTest
-count.
+The existing suite still contains exactly **13 XCTest methods**.
 
-Test build command:
+Standard command:
 
 ```sh
 xcodebuild \
@@ -76,35 +68,20 @@ xcodebuild \
   -scheme TAG10CoreTests \
   -configuration Debug \
   -destination 'platform=macOS' \
-  -derivedDataPath work/FinalTestDerivedData \
-  CODE_SIGNING_ALLOWED=NO \
-  build-for-testing
-```
-
-Result: **PASS — TEST BUILD SUCCEEDED**.
-
-Standard test command:
-
-```sh
-xcodebuild \
-  -project TAG10.xcodeproj \
-  -scheme TAG10CoreTests \
-  -configuration Debug \
-  -destination 'platform=macOS' \
-  -derivedDataPath work/FinalTestDerivedData \
+  -derivedDataPath work/TestDerivedData \
   CODE_SIGNING_ALLOWED=NO \
   test
 ```
 
-Result in the Codex execution environment: **INFRASTRUCTURE FAIL** before test
-execution because the sandbox denied access to
-`com.apple.testmanagerd.control`.
+Result in the Codex environment: **INFRASTRUCTURE FAIL** after successfully
+building the test bundle. The sandbox denied communication with
+`com.apple.testmanagerd.control` before XCTest execution.
 
-The exact generated XCTest bundle was then executed directly:
+The same Xcode-generated bundle was executed directly:
 
 ```sh
 /Applications/Xcode.app/Contents/Developer/usr/bin/xctest \
-  work/FinalTestDerivedData/Build/Products/Debug/TAG10CoreTests.xctest
+  work/TestDerivedData/Build/Products/Debug/TAG10CoreTests.xctest
 ```
 
 Result: **PASS — 13 tests executed, 0 failures**.
@@ -112,7 +89,7 @@ Result: **PASS — 13 tests executed, 0 failures**.
 Verified tests:
 
 1. Match starts with 10 seconds remaining.
-2. Timer does not decrease while an actor is stunned.
+2. Timer does not decrease while either actor is stunned.
 3. Direct contact swaps IT state.
 4. New IT is stunned for one second and velocity is cleared.
 5. Shock is unavailable for two seconds after becoming IT.
@@ -128,26 +105,27 @@ Verified tests:
 
 ## Visual Evidence
 
-No simulator screenshot is attached. The Codex sandbox could not connect to
-CoreSimulatorService. The native iOS device-SDK build succeeded, and the Phase
-0/1 launch surface is intentionally limited to the SpriteKit placeholder
-`TAG10 / GAME CORE READY • 10s`; gameplay visuals belong to Phase 2.
+No simulator screenshots were captured. `xcrun simctl list devices available`
+failed because this Codex sandbox cannot connect to CoreSimulatorService
+(`NSPOSIXErrorDomain Code=61`, connection refused). The iOS app compiled
+successfully, but intro / playing / result could not be launched for screenshots
+in this environment.
 
 ## Deviations
 
-- No gameplay rule or balance values were changed.
-- The mandatory rules are tested in a hostless macOS XCTest bundle because the
-  core is rendering-independent. The app target remains native iOS.
-- `xcodebuild test` could not launch the test runner inside the Codex sandbox;
-  the same compiled XCTest bundle passed all 13 tests when invoked directly.
-- iOS 17.0 is a provisional deployment target pending a product decision.
+- No gameplay rule or balance constant was changed.
+- The standard `xcodebuild test` runner is blocked by the execution sandbox; the
+  exact compiled XCTest bundle passed all 13 tests with direct `xctest`.
+- Simulator screenshots are omitted because CoreSimulatorService is unavailable.
 
 ## Unresolved
 
-- Simulator and physical-device launch verification.
-- Standard `xcodebuild test` verification outside the restricted Codex sandbox.
-- Rating and high-streak persistence.
-- Bundle identifier, signing team, and release configuration.
+- Simulator or physical-device visual verification of intro, playing, and
+  result presentation.
+- Standard `xcodebuild test` execution outside the restricted Codex sandbox.
+- Phase 2B visual polish.
+- Player controls, CPU AI, additional stages, movement speed application,
+  haptics, sound, and persistence remain outside Phase 2A.
 
 ## Decisions Needed
 
@@ -156,8 +134,11 @@ CoreSimulatorService. The native iOS device-SDK build succeeded, and the Phase
 - Production bundle identifier and Apple development team.
 - Whether BGM is in product scope.
 
+No new Phase 2A product decision was made beyond the supplied requirements and
+the HTML visual reference.
+
 ## Next Suggested Step
 
-Review this Phase 0 / Phase 1 snapshot in GitHub. After explicit approval of the
-phase boundary and outstanding decisions, prepare a separate work unit for
-Phase 2. Do not begin Phase 2 implicitly.
+Review the Phase 2A commit and visually verify intro / playing / result on an
+iOS Simulator or device. Begin Phase 2B only after explicit approval; do not
+proceed to Phase 2B or Phase 3 implicitly.

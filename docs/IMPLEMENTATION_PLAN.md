@@ -23,15 +23,30 @@ Create testable logic for:
 - Timer does not decrease while either actor is stunned.
 - Timeout result is uniquely determined by IT state.
 
-## Phase 2 — SpriteKit gameplay scene
-- FLAT arena
-- Player/CPU visuals
-- IT indicator
-- Motion trail
-- HUD
-- FIGHT / WIN / LOSE presentation
-- Shock ring
-- Particles
+## Phase 2A — Visual gameplay shell
+- Connect `GameScene` to the existing `GameEngine`.
+- Render the FLAT arena only.
+- Render the player and CPU at fixed starting positions.
+- Show an IT indicator that does not rely on color alone.
+- Transition from FIGHT into `.playing`.
+- Advance the authoritative 10-second timer from the SpriteKit update loop.
+- Project time, HEAT, shock arm/cooldown, match state, and STUN from `GameEngine` into the HUD.
+- Present WIN / LOSE from the `GameEngine` result.
+- Add only the minimum pulse, ring, and particle feedback needed to read the shell.
+
+### Phase 2A exclusions
+- CoreMotion and player controls
+- CPU AI
+- BOWL and PILLAR stages
+- Applying HEAT to actual movement speed
+- Haptics and sound
+- Persistence
+
+## Phase 2B — Visual polish
+- Motion trails
+- Polished shock-wave ring presentation
+- Richer tag, shock, countdown, and result particles
+- Additional scene transitions and visual tuning
 
 ## Phase 3 — Input
 - CoreMotion tilt movement

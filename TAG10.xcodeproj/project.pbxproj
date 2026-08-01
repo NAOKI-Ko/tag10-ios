@@ -19,6 +19,8 @@
 		10000000000000000000000A /* TAG10Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* TAG10Core.framework */; };
 		10000000000000000000000B /* TAG10Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* TAG10Core.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		10000000000000000000000C /* TAG10Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* TAG10Core.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		10000000000000000000000D /* ActorNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000C /* ActorNode.swift */; };
+		10000000000000000000000E /* GameHUDNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* GameHUDNode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +77,8 @@
 		200000000000000000000009 /* TAG10Core.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TAG10Core.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		20000000000000000000000A /* TAG10.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TAG10.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20000000000000000000000B /* TAG10CoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TAG10CoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		20000000000000000000000C /* ActorNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorNode.swift; sourceTree = "<group>"; };
+		20000000000000000000000D /* GameHUDNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameHUDNode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,6 +143,8 @@
 				200000000000000000000005 /* TAG10App.swift */,
 				200000000000000000000006 /* ContentView.swift */,
 				200000000000000000000007 /* GameScene.swift */,
+				20000000000000000000000C /* ActorNode.swift */,
+				20000000000000000000000D /* GameHUDNode.swift */,
 			);
 			path = TAG10App;
 			sourceTree = "<group>";
@@ -303,6 +309,8 @@
 				100000000000000000000005 /* TAG10App.swift in Sources */,
 				100000000000000000000006 /* ContentView.swift in Sources */,
 				100000000000000000000007 /* GameScene.swift in Sources */,
+				10000000000000000000000D /* ActorNode.swift in Sources */,
+				10000000000000000000000E /* GameHUDNode.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
