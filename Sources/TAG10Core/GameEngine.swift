@@ -84,6 +84,30 @@ public struct GameEngine: Equatable, Sendable {
         }
     }
 
+    /// Applies player-only Phase 3 movement while preserving the engine as the
+    /// authoritative owner of position and velocity.
+    public mutating func movePlayer(
+        input: Vector2,
+        deltaTime: TimeInterval,
+        bounds: MovementBounds
+    ) {
+        guard phase == .playing, !player.isStunned else { return }
+        player = PlayerMovement.integrate(
+            actor: player,
+            input: input,
+            deltaTime: deltaTime,
+            bounds: bounds,
+            maximumSpeed: maximumMovementSpeed
+        )
+    }
+
+    /// DEBUG drag uses this entry point instead of moving the SpriteKit node.
+    public mutating func placePlayer(at position: Vector2, bounds: MovementBounds) {
+        guard phase == .playing, !player.isStunned else { return }
+        player.position = bounds.clamped(position)
+        player.velocity = .zero
+    }
+
     @discardableResult
     public mutating func attemptDirectTag(from pusher: ActorID) -> Bool {
         guard phase == .playing,

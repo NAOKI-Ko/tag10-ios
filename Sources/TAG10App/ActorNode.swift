@@ -3,11 +3,13 @@ import TAG10Core
 
 /// Visual adapter for one engine actor. It owns no gameplay state.
 final class ActorNode: SKNode {
+    static let visualRadius: CGFloat = 18
+
     private let actorName: String
     private let actorColor: SKColor
     private let aura = SKShapeNode(circleOfRadius: 24)
     private let pulseRing = SKShapeNode(circleOfRadius: 31)
-    private let body = SKShapeNode(circleOfRadius: 18)
+    private let body = SKShapeNode(circleOfRadius: visualRadius)
     private let bodyHighlight = SKShapeNode(circleOfRadius: 6)
     private let nameLabel = SKLabelNode(fontNamed: "Menlo-Bold")
     private let itLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")

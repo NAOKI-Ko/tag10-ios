@@ -1,5 +1,183 @@
 # CODEX REPORT — TAG10
 
+## Phase 3 Input Implementation — 2026-08-09
+
+- Branch: `phase-3-input`
+- Branch Baseline:
+  `292c31d581e5cddcf2270db1feb35cb8c0caf7b9`
+- Latest Reviewed Implementation:
+  `b6ff62966387df9eebc1d322cf14d89133a51276`
+- Phase 3 Review Target: the commit containing this report section
+- Status: **IMPLEMENTED / REVIEW PENDING**
+- Codex Code Review: **PASS**
+- Simulator Visual QA: **PASS**
+- Device Motion QA: **PENDING HUMAN GATE**
+- ChatGPT Final Review: **PENDING**
+- Continuity: **BLOCKED ON REVIEW**
+
+### Objective
+
+Add only native player input to the approved Phase 2B Visual Gameplay Shell:
+CoreMotion tilt movement, neutral-angle calibration, tap-to-SHOCK, DEBUG drag
+fallback, and validation of the deferred motion trail.
+
+### Implementation
+
+- Added a pure `TiltInputMapper` that stores the first valid attitude as
+  neutral, wraps angular differences, applies a radial dead zone, and clamps
+  output magnitude to one.
+- Added `MotionInputController` as the only CoreMotion owner. It uses
+  `deviceMotion` with `xArbitraryZVertical`, samples at 60 Hz, and safely maps
+  unavailable/error states to zero input without crashing.
+- Added a pure exponential-damping movement integrator that produces consistent
+  results across delta-time subdivision, applies the existing IT speed
+  multiplier, does not apply HEAT, and clamps actor center/velocity at arena
+  bounds.
+- Added GameEngine APIs for authoritative player movement and DEBUG placement;
+  SpriteKit actor nodes remain read-only render projections.
+- Added arena-geometry range checks using the prototype's direct-tag two-radius
+  and Shock four-radius relationships.
+- Connected player movement and direct-contact checks to the SpriteKit update
+  loop. CPU position remains fixed and no CPU decision-making was added.
+- Connected a game-screen tap to the existing `GameEngine.useShock` API and
+  explicitly handles `unavailable`, `missed`, and `transferred` outcomes.
+- Added DEBUG-only drag/tap disambiguation. Drag writes through GameEngine,
+  respects actor-radius arena bounds, and is absent from Release gameplay.
+- Added minimal input status and Shock outcome text. No menu/settings expansion,
+  haptics, or sound was added.
+- Added `NSMotionUsageDescription` to generated app Info.plist settings.
+
+Input constants are centralized under `GameConfig.Input`. Movement speed,
+acceleration, damping, and 32-degree full-scale tilt follow the HTML reference;
+the required 0.05-radian dead zone is a Phase 3 input-tuning value pending
+physical-device feel validation.
+
+### Changed Files
+
+- `Sources/TAG10Core/GameConfig.swift`
+- `Sources/TAG10Core/GameEngine.swift`
+- `Sources/TAG10Core/PlayerInput.swift` (new)
+- `Sources/TAG10App/GameScene.swift`
+- `Sources/TAG10App/MotionInputController.swift` (new)
+- `Sources/TAG10App/ActorNode.swift`
+- `Sources/TAG10App/GameEffectsNode.swift`
+- `Tests/TAG10CoreTests/GameCoreTests.swift`
+- `TAG10.xcodeproj/project.pbxproj`
+- `docs/START_HERE.md`
+- `docs/PROJECT_STATE.md`
+- `docs/REVIEW_LOG.md`
+- `docs/CODEX_REPORT.md`
+- `docs/evidence/phase-3/idle.png` (new)
+- `docs/evidence/phase-3/drag-movement.png` (new)
+- `docs/evidence/phase-3/shock.png` (new)
+
+### Build
+
+Generic iOS command:
+
+```sh
+xcodebuild \
+  -project TAG10.xcodeproj \
+  -scheme TAG10 \
+  -configuration Debug \
+  -destination 'generic/platform=iOS' \
+  -derivedDataPath work/Phase3Build \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+Result: **PASS — BUILD SUCCEEDED**.
+
+The exact iPhone 17 Pro Simulator build also passed with
+`work/Phase3Simulator` DerivedData.
+
+### Tests
+
+Standard command:
+
+```sh
+xcodebuild \
+  -project TAG10.xcodeproj \
+  -scheme TAG10CoreTests \
+  -configuration Debug \
+  -destination 'platform=macOS' \
+  -derivedDataPath work/Phase3Tests \
+  CODE_SIGNING_ALLOWED=NO \
+  test
+```
+
+Result: **INFRASTRUCTURE FAIL** after the test bundle built because the sandbox
+denied `com.apple.testmanagerd.control` communication.
+
+Direct execution of that exact compiled bundle:
+
+```sh
+/Applications/Xcode.app/Contents/Developer/usr/bin/xctest \
+  work/Phase3Tests/Build/Products/Debug/TAG10CoreTests.xctest
+```
+
+Result: **PASS — 22 tests executed, 0 failures**.
+
+The original 13 tests remain. Nine Phase 3 tests cover dead-zone mapping, tilt
+clamping, neutral offset, input-to-movement direction, arena clamping,
+delta-time independence, arena-aware Shock range, unavailable Shock state
+integrity, and missed Shock state/cooldown. The existing transferred-Shock test
+also remains passing.
+
+### Simulator Launch and Visual QA
+
+- Result: **PASS**
+- Device: **iPhone 17 Pro**
+- Runtime: **iOS 26.5**
+- Orientation: portrait
+- Simulator UDID: `9D870918-AC43-4F0C-9C63-49B824D22C5B`
+- Install / launch: **PASS — `com.tag10.app` launched successfully**
+- CoreMotion availability fallback: **PASS** — Simulator reported unavailable,
+  input stayed zero, no crash occurred, and DEBUG drag guidance appeared.
+- Idle: no afterimages were emitted while PLAYER remained stationary.
+- Drag movement: PLAYER moved through GameEngine, remained within the arena,
+  and a short afterimage chain clearly showed movement direction without
+  obscuring the actor.
+- Motion trail lifecycle: emission is movement-threshold and cadence gated;
+  every afterimage runs `removeFromParent()` after 0.24 seconds. No visible
+  accumulation or frame-rate degradation occurred during QA.
+- Tap-to-SHOCK: an actual tap after the two-second arm window produced
+  `ShockOutcome.missed`, the Phase 2B ring, `SHOCK MISS`, and an authoritative
+  cooldown reading of 2.9 seconds. Transfer and unavailable behavior remain
+  covered by rendering-independent tests.
+
+Evidence:
+
+- `docs/evidence/phase-3/idle.png`
+- `docs/evidence/phase-3/drag-movement.png`
+- `docs/evidence/phase-3/shock.png`
+
+### Device-only QA / Unresolved
+
+- Physical-device CoreMotion availability and any system permission/error path.
+- Neutral-angle comfort at match start and explicit recalibration behavior.
+- Tilt axis direction, dead-zone feel, maximum tilt clamp, and perceived input
+  latency on a physical iPhone.
+- Tilt plus tap-to-SHOCK interaction on a physical iPhone.
+- Standard `xcodebuild test` runner remains blocked only by the Codex sandbox;
+  direct XCTest execution passed the exact generated bundle.
+
+### Deviations / Exclusions
+
+- No documented gameplay balance value was changed.
+- The required dead zone was not numerically specified; 0.05 radians was added
+  as an isolated, reviewable input value pending device tuning.
+- CPU AI/movement/SHOCK, BOWL, PILLAR, stage cycling, HEAT speed application,
+  haptics, sound, persistence, and all Phase 4+ work were not implemented.
+- The feature branch was not merged to `main`. **Phase 4 was not started.**
+
+### Next Suggested Step
+
+ChatGPT exact-SHA code/state and Visual Evidence review, plus the physical-device
+Motion Human Gate. Do not approve/close Phase 3 or begin Phase 4 automatically.
+
+The sections below are historical records from earlier phases.
+
 ## Phase 2B Final Review Sync — 2026-08-09
 
 - Decision: **APPROVE**

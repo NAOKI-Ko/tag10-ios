@@ -22,6 +22,8 @@
 		10000000000000000000000D /* ActorNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000C /* ActorNode.swift */; };
 		10000000000000000000000E /* GameHUDNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* GameHUDNode.swift */; };
 		10000000000000000000000F /* GameEffectsNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* GameEffectsNode.swift */; };
+		100000000000000000000010 /* PlayerInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000F /* PlayerInput.swift */; };
+		100000000000000000000011 /* MotionInputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000010 /* MotionInputController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +83,8 @@
 		20000000000000000000000C /* ActorNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorNode.swift; sourceTree = "<group>"; };
 		20000000000000000000000D /* GameHUDNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameHUDNode.swift; sourceTree = "<group>"; };
 		20000000000000000000000E /* GameEffectsNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEffectsNode.swift; sourceTree = "<group>"; };
+		20000000000000000000000F /* PlayerInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerInput.swift; sourceTree = "<group>"; };
+		200000000000000000000010 /* MotionInputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionInputController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -135,6 +139,7 @@
 				200000000000000000000002 /* GameModels.swift */,
 				200000000000000000000003 /* GameEngine.swift */,
 				200000000000000000000004 /* PlayerProgress.swift */,
+				20000000000000000000000F /* PlayerInput.swift */,
 			);
 			path = TAG10Core;
 			sourceTree = "<group>";
@@ -148,6 +153,7 @@
 				20000000000000000000000C /* ActorNode.swift */,
 				20000000000000000000000D /* GameHUDNode.swift */,
 				20000000000000000000000E /* GameEffectsNode.swift */,
+				200000000000000000000010 /* MotionInputController.swift */,
 			);
 			path = TAG10App;
 			sourceTree = "<group>";
@@ -302,6 +308,7 @@
 				100000000000000000000002 /* GameModels.swift in Sources */,
 				100000000000000000000003 /* GameEngine.swift in Sources */,
 				100000000000000000000004 /* PlayerProgress.swift in Sources */,
+				100000000000000000000010 /* PlayerInput.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,6 +322,7 @@
 				10000000000000000000000D /* ActorNode.swift in Sources */,
 				10000000000000000000000E /* GameHUDNode.swift in Sources */,
 				10000000000000000000000F /* GameEffectsNode.swift in Sources */,
+				100000000000000000000011 /* MotionInputController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -422,6 +430,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_NSMotionUsageDescription = "TAG10 uses device tilt to move the player.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -448,6 +457,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_NSMotionUsageDescription = "TAG10 uses device tilt to move the player.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

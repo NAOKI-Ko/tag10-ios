@@ -17,6 +17,26 @@ public enum GameConfig {
     public static let initialTagProtectionDuration: TimeInterval = 0.6
     public static let postSwapTagProtectionBuffer: TimeInterval = 0.3
 
+    /// Phase 3 input values. Movement values preserve the HTML prototype's
+    /// FLAT-stage relationship (`MAXSPD = width * 0.98`, `ACCEL = MAXSPD * 7`)
+    /// without applying the deferred HEAT speed bonus.
+    public enum Input {
+        public static let motionUpdateInterval: TimeInterval = 1.0 / 60.0
+        public static let tiltDeadZoneRadians = 0.05
+        public static let tiltFullScaleRadians = 32.0 * .pi / 180.0
+        public static let playerMaximumSpeed = 0.98
+        public static let accelerationMultiplier = 7.0
+        public static let dampingPerSixtiethSecond = 0.86
+        public static let debugDragActivationDistance: Double = 8.0
+    }
+
+    /// Range relationships from the HTML reference implementation, expressed
+    /// relative to the rendered actor radius so they remain arena-size aware.
+    public enum Range {
+        public static let directTagActorRadii = 2.0
+        public static let shockActorRadii = 4.0
+    }
+
     /// Multipliers used by the HTML reference implementation. The native
     /// movement system will provide the arena-relative maximum speed later.
     public static let directTagKnockbackMultiplier = 2.2

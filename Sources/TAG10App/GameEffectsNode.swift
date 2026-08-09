@@ -3,6 +3,25 @@ import SpriteKit
 /// Owns short-lived Phase 2B presentation nodes. Every emitted child removes
 /// itself after its action completes.
 final class GameEffectsNode: SKNode {
+    func emitStatus(_ text: String, at position: CGPoint, color: SKColor) {
+        let label = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+        label.text = text
+        label.fontSize = 13
+        label.fontColor = color
+        label.position = position
+        label.zPosition = 72
+        addChild(label)
+        label.run(
+            .sequence([
+                .group([
+                    .moveBy(x: 0, y: 10, duration: 0.38),
+                    .fadeOut(withDuration: 0.38),
+                ]),
+                .removeFromParent(),
+            ])
+        )
+    }
+
     func emitBurst(at position: CGPoint, color: SKColor, count: Int) {
         for index in 0..<count {
             let particle = SKShapeNode(circleOfRadius: CGFloat.random(in: 2...4))

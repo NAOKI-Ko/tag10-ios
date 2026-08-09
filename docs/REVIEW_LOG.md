@@ -159,3 +159,35 @@ entries; correct an earlier statement with a new entry that cites it.
 - Next Action: **Await explicit Phase 3 Work Unit from ChatGPT / Notion.**
 - Phase Gate: **Phase 3 must not start until a new Work Unit explicitly
   authorizes it.**
+
+## 2026-08-09 — Phase 3 Input Implementation + Codex Visual QA
+
+- Branch: `phase-3-input`
+- Branch Baseline:
+  `292c31d581e5cddcf2270db1feb35cb8c0caf7b9`
+- Latest Reviewed Implementation remains:
+  `b6ff62966387df9eebc1d322cf14d89133a51276`
+- Phase 3 Review Target: the commit containing this entry
+- Scope: CoreMotion tilt, neutral calibration, player-only movement,
+  tap-to-SHOCK, DEBUG drag fallback, and motion-trail validation
+- Core game/balance rule changes: **None**
+- Generic iOS Build: **PASS — BUILD SUCCEEDED**
+- Simulator Build / Launch: **PASS — iPhone 17 Pro / iOS 26.5 / portrait**
+- Tests: **PASS — 22 XCTest methods, 0 failures**
+- Codex Code Review: **PASS**
+- Simulator Visual QA: **PASS**
+- Evidence:
+  - `docs/evidence/phase-3/idle.png`
+  - `docs/evidence/phase-3/drag-movement.png`
+  - `docs/evidence/phase-3/shock.png`
+- Motion trail: **PASS** — movement-only emission, readable direction, bounded
+  cadence, self-removing nodes, and no stationary over-emission observed
+- Tap-to-SHOCK: **PASS** — actual tap produced a missed Shock, ring/feedback,
+  and authoritative three-second cooldown
+- Device Motion QA: **PENDING HUMAN GATE**
+- ChatGPT Final Review: **PENDING**
+- Phase status: **IMPLEMENTED / REVIEW PENDING**
+- Continuity: **BLOCKED ON REVIEW**
+- Next Action: **ChatGPT exact-SHA / Visual Evidence review and device Motion
+  QA**
+- Phase Gate: **Do not merge to `main` and do not begin Phase 4.**

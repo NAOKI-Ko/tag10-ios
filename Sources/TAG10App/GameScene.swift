@@ -36,9 +36,11 @@ final class GameScene: SKScene {
 
     private var engine = GameEngine.randomMatch(
         playerPosition: Vector2(x: 0.30, y: 0.28),
-        cpuPosition: Vector2(x: 0.70, y: 0.75)
+        cpuPosition: Vector2(x: 0.70, y: 0.75),
+        maximumMovementSpeed: GameConfig.Input.playerMaximumSpeed
     )
 
+    private let motionInputController = MotionInputController()
     private let arenaLayer = SKNode()
     private let effectsLayer = GameEffectsNode()
     private let playerNode = ActorNode(name: "PLAYER", color: .tag10Cyan)
@@ -52,6 +54,7 @@ final class GameScene: SKScene {
     private let resultAccent = SKShapeNode(rectOf: CGSize(width: 128, height: 3), cornerRadius: 1.5)
     private let resultLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
     private let resultDetailLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
+    private let inputStatusLabel = SKLabelNode(fontNamed: "Menlo-Bold")
 
     private var previousUpdateTime: TimeInterval?
     private var introElapsed: TimeInterval = 0
@@ -63,6 +66,11 @@ final class GameScene: SKScene {
     private var previousCountdownNumber: Int?
     private var lastPlayerTrailTime: TimeInterval = -1000
     private var lastCPUtrailTime: TimeInterval = -1000
+
+#if DEBUG
+    private var debugTouchStart: CGPoint?
+    private var isDebugDragging = false
+#endif
 
     override func didMove(to view: SKView) {
         guard !isConfigured else { return }
@@ -81,6 +89,12 @@ final class GameScene: SKScene {
         renderEngineState()
         previousVisualSnapshot = VisualSnapshot(engine: engine)
         presentIntroEntrance()
+        motionInputController.start()
+    }
+
+    override func willMove(from view: SKView) {
+        motionInputController.stop()
+        super.willMove(from: view)
     }
 
     override func didChangeSize(_ oldSize: CGSize) {
@@ -108,6 +122,8 @@ final class GameScene: SKScene {
             }
         case .playing:
             engine.advance(by: deltaTime)
+            updatePlayerMovement(deltaTime: deltaTime)
+            attemptDirectTagIfNeeded()
         case .finished:
             presentResultIfNeeded()
         }
@@ -119,6 +135,7 @@ final class GameScene: SKScene {
 
         presentVisualStateChanges()
         renderEngineState()
+        renderInputStatus()
         updateCountdownPresentation()
     }
 
@@ -133,6 +150,22 @@ final class GameScene: SKScene {
                     - VisualConfig.arenaInset
             )
         )
+    }
+
+    private var movementBounds: MovementBounds {
+        guard arenaFrame.width > 0, arenaFrame.height > 0 else { return .normalized }
+        let horizontalInset = Double(ActorNode.visualRadius / arenaFrame.width)
+        let verticalInset = Double(ActorNode.visualRadius / arenaFrame.height)
+        return MovementBounds(
+            minimumX: horizontalInset,
+            maximumX: 1 - horizontalInset,
+            minimumY: verticalInset,
+            maximumY: 1 - verticalInset
+        )
+    }
+
+    private var arenaSizeVector: Vector2 {
+        Vector2(x: Double(arenaFrame.width), y: Double(arenaFrame.height))
     }
 
     private func configurePhaseLabels() {
@@ -183,6 +216,11 @@ final class GameScene: SKScene {
         resultDetailLabel.zPosition = 81
         resultDetailLabel.isHidden = true
         addChild(resultDetailLabel)
+
+        inputStatusLabel.fontSize = 10
+        inputStatusLabel.fontColor = SKColor(white: 0.58, alpha: 1)
+        inputStatusLabel.zPosition = 41
+        addChild(inputStatusLabel)
     }
 
     private func layoutScene() {
@@ -200,6 +238,7 @@ final class GameScene: SKScene {
         resultLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.57)
         resultAccent.position = CGPoint(x: size.width / 2, y: size.height * 0.535)
         resultDetailLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.49)
+        inputStatusLabel.position = CGPoint(x: size.width / 2, y: 23)
 
         positionActors()
     }
@@ -275,6 +314,132 @@ final class GameScene: SKScene {
             x: arenaFrame.minX + arenaFrame.width * CGFloat(normalizedPosition.x),
             y: arenaFrame.minY + arenaFrame.height * CGFloat(normalizedPosition.y)
         )
+    }
+
+    private func normalizedPosition(for point: CGPoint) -> Vector2 {
+        guard arenaFrame.width > 0, arenaFrame.height > 0 else { return .zero }
+        return Vector2(
+            x: Double((point.x - arenaFrame.minX) / arenaFrame.width),
+            y: Double((point.y - arenaFrame.minY) / arenaFrame.height)
+        )
+    }
+
+    private func updatePlayerMovement(deltaTime: TimeInterval) {
+#if DEBUG
+        guard !isDebugDragging else { return }
+#endif
+        engine.movePlayer(
+            input: motionInputController.input,
+            deltaTime: deltaTime,
+            bounds: movementBounds
+        )
+    }
+
+    private func attemptDirectTagIfNeeded() {
+        guard CollisionRules.isDirectTagInRange(
+            playerPosition: engine.player.position,
+            cpuPosition: engine.cpu.position,
+            arenaSize: arenaSizeVector,
+            actorRadius: Double(ActorNode.visualRadius)
+        ) else { return }
+
+        let pusher: ActorID = engine.player.isIt ? .player : .cpu
+        engine.attemptDirectTag(from: pusher)
+    }
+
+    private func attemptPlayerShock() {
+        let targetIsInRange = CollisionRules.isShockTargetInRange(
+            ownerPosition: engine.player.position,
+            targetPosition: engine.cpu.position,
+            arenaSize: arenaSizeVector,
+            actorRadius: Double(ActorNode.visualRadius)
+        )
+        let outcome = engine.useShock(by: .player, targetIsInRange: targetIsInRange)
+
+        switch outcome {
+        case .unavailable:
+            effectsLayer.emitStatus(
+                "SHOCK NOT READY",
+                at: CGPoint(x: arenaFrame.midX, y: arenaFrame.minY + 34),
+                color: SKColor(white: 0.72, alpha: 1)
+            )
+        case .missed:
+            effectsLayer.emitStatus(
+                "SHOCK MISS",
+                at: CGPoint(x: arenaFrame.midX, y: arenaFrame.minY + 34),
+                color: .tag10Cyan
+            )
+        case .transferred:
+            effectsLayer.emitStatus(
+                "SHOCK TAG!",
+                at: CGPoint(x: arenaFrame.midX, y: arenaFrame.minY + 34),
+                color: .tag10Gold
+            )
+        }
+    }
+
+    private func renderInputStatus() {
+        switch motionInputController.status {
+        case .idle:
+            inputStatusLabel.text = "STARTING MOTION…"
+        case .calibrating:
+            inputStatusLabel.text = "HOLD STEADY • CALIBRATING"
+            inputStatusLabel.fontColor = .tag10Gold
+        case .active:
+            inputStatusLabel.text = "TILT READY • TAP TO SHOCK"
+            inputStatusLabel.fontColor = .tag10Mint
+        case .unavailable, .failed:
+#if DEBUG
+            inputStatusLabel.text = "DEBUG • DRAG TO MOVE • TAP TO SHOCK"
+#else
+            inputStatusLabel.text = "TILT UNAVAILABLE • TAP TO SHOCK"
+#endif
+            inputStatusLabel.fontColor = SKColor(white: 0.58, alpha: 1)
+        }
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+#if DEBUG
+        debugTouchStart = touches.first?.location(in: self)
+        isDebugDragging = false
+#endif
+    }
+
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+#if DEBUG
+        guard engine.phase == .playing,
+              let point = touches.first?.location(in: self),
+              let start = debugTouchStart else { return }
+
+        if distance(from: start, to: point) >= CGFloat(GameConfig.Input.debugDragActivationDistance) {
+            isDebugDragging = true
+        }
+        guard isDebugDragging else { return }
+        engine.placePlayer(at: normalizedPosition(for: point), bounds: movementBounds)
+#endif
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+#if DEBUG
+        defer {
+            debugTouchStart = nil
+            isDebugDragging = false
+        }
+        if isDebugDragging {
+            if let point = touches.first?.location(in: self) {
+                engine.placePlayer(at: normalizedPosition(for: point), bounds: movementBounds)
+            }
+            return
+        }
+#endif
+        attemptPlayerShock()
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+#if DEBUG
+        debugTouchStart = nil
+        isDebugDragging = false
+#endif
     }
 
     private func presentFightTransition() {

@@ -8,30 +8,27 @@ ChatGPT/Codex conversations, account memory, or an earlier handoff message.
 
 - Project: **TAG10**
 - Repository: `NAOKI-Ko/tag10-ios`
-- Branch: `main`
-- Phase: **Phase 2B — Visual Polish**
-- Status: **CLOSED / APPROVED**
-- Work Unit: **Phase 2B Final Review Sync**
+- Branch: `phase-3-input`
+- Phase: **Phase 3 — Input**
+- Status: **IMPLEMENTED / REVIEW PENDING**
+- Work Unit: **Phase 3 — Input**
 - Latest Reviewed Implementation Commit:
   `b6ff62966387df9eebc1d322cf14d89133a51276`
-- Phase 2B Review Target Implementation Commit:
-  `b6ff62966387df9eebc1d322cf14d89133a51276`
-- Reviewed Phase 2B State Snapshot:
-  `59b75cbc3af84148721bc58e5870d4c6ba9f8fed`
-- Phase 2B Handoff Sync:
-  `54bd99d750ffcd47f2a26a2af9ade678591312c6`
-- Phase 2B Code / State Review: **PASS**
-- Phase 2B Codex Visual QA: **PASS**
-- Phase 2B ChatGPT Final Visual Review: **PASS**
-- Final Decision: **APPROVE**
-- Continuity: **READY**
-- Review Sync: **completed by the commit containing this snapshot**
-- Next Action: **Await explicit Phase 3 Work Unit from ChatGPT / Notion.**
-- Phase Gate: **Do not start Phase 3 automatically.**
+- Phase 3 Branch Baseline:
+  `292c31d581e5cddcf2270db1feb35cb8c0caf7b9`
+- Phase 3 Review Target Implementation Commit: the commit containing this
+  snapshot; resolve with `git log -1 --format=%H -- docs/START_HERE.md`
+- Codex Code Review: **PASS**
+- Simulator Visual QA: **PASS**
+- Device Motion QA: **PENDING HUMAN GATE**
+- ChatGPT Final Review: **PENDING**
+- Continuity: **BLOCKED ON REVIEW**
+- Next Action: **ChatGPT exact-SHA code/state and Visual Evidence review.**
+- Phase Gate: **Phase 4 is PROHIBITED.**
 
-Phase 2B is formally closed. No implementation work is currently authorized;
-the repository must remain at this approved state until an explicit Phase 3
-Work Unit is provided by ChatGPT / Notion.
+Phase 3 input implementation is complete on its dedicated branch but is not
+approved or closed. Do not merge to `main` and do not begin Phase 4 until an
+explicit review receipt or Work Unit authorizes the transition.
 
 ## Cold Start Reading Order
 
@@ -56,10 +53,10 @@ work unit and applying the current phase gate.
 
 ## Recovery Procedure
 
-1. Confirm local `main`, `origin/main`, and a clean worktree.
+1. Confirm the checked-out branch, its upstream, and a clean worktree.
 2. Read `docs/PROJECT_STATE.md` before deciding what to do.
-3. Confirm the Latest Reviewed implementation and referenced review commits
-   exist in Git.
+3. Confirm the Latest Reviewed implementation, branch baseline, and Phase 3
+   Review Target exist in Git.
 4. Confirm the evidence paths and review statuses recorded in PROJECT_STATE.
 5. Work only on the explicit task authorized by PROJECT_STATE or the user.
 6. Keep `PROJECT_STATE.md`, `CODEX_REPORT.md`, and `REVIEW_LOG.md` synchronized
@@ -80,25 +77,28 @@ disagree:
 Do not resolve a state or product contradiction by guessing. Do not advance to
 a later phase until `docs/PROJECT_STATE.md` or an explicit task authorizes it.
 
-## Phase 2B Final Review Receipt
+## Phase 3 Verification Receipt
 
-- Decision: **APPROVE**
+- Scope: CoreMotion tilt, neutral calibration, player-only movement,
+  tap-to-SHOCK, DEBUG drag fallback, and motion-trail validation
+- Generic iOS Build: **PASS — BUILD SUCCEEDED**
+- Simulator Build / Launch: **PASS — iPhone 17 Pro / iOS 26.5 / portrait**
+- Tests: **PASS — 22 XCTest methods, 0 failures**
+- Simulator Visual QA: **PASS**
+- Evidence:
+  - `docs/evidence/phase-3/idle.png`
+  - `docs/evidence/phase-3/drag-movement.png`
+  - `docs/evidence/phase-3/shock.png`
+- Device Motion QA: **PENDING HUMAN GATE**
+- Explicitly not implemented: CPU AI/movement/SHOCK, BOWL, PILLAR, stage
+  cycling, HEAT speed application, haptics, sound, persistence, and Phase 4+
+
+## Phase 2B Reviewed Baseline
+
+- Status: **CLOSED / APPROVED**
 - Approved Implementation / Latest Reviewed Implementation:
   `b6ff62966387df9eebc1d322cf14d89133a51276`
-- Reviewed State Snapshot:
-  `59b75cbc3af84148721bc58e5870d4c6ba9f8fed`
-- Handoff Sync:
-  `54bd99d750ffcd47f2a26a2af9ade678591312c6`
-- Code / State Review: **PASS**
-- Codex Visual QA: **PASS**
 - ChatGPT Final Visual Review: **PASS**
-- Evidence reviewed:
-  - `docs/evidence/phase-2b/intro.png`
-  - `docs/evidence/phase-2b/countdown.png`
-  - `docs/evidence/phase-2b/result.png`
-- Deferred Visual Validation:
-  - motion trail → Phase 3
-  - tag effect → relevant gameplay phase
-  - shock effect → relevant gameplay phase
-- Phase Gate: **Phase 3 must not start until a new Work Unit explicitly
-  authorizes it.**
+
+The Phase 2B baseline remains the Latest Reviewed Implementation until ChatGPT
+approves the exact Phase 3 Review Target.
