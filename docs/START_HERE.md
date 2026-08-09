@@ -10,24 +10,27 @@ ChatGPT/Codex conversations, account memory, or an earlier handoff message.
 - Repository: `NAOKI-Ko/tag10-ios`
 - Branch: `main`
 - Phase: **Phase 2B — Visual Polish**
-- Status: **IMPLEMENTATION_AUTHORIZED_AFTER_HANDOFF_SYNC**
+- Status: **AWAITING_CHATGPT_REVIEW**
 - Work Unit: **Visual Polish**
 - Latest Reviewed Implementation Commit:
   `26dfdb29aeb9854631d925d594ac7e5aecf73022`
 - Baseline Review Sync:
   `eba4f8e8b39aa03616ebeb5fe9334701cab0c23e`
-- Phase 2B Review Target: **Not created**
+- Phase 2B Handoff Sync:
+  `54bd99d750ffcd47f2a26a2af9ade678591312c6`
+- Phase 2B Review Target Implementation Commit:
+  `b6ff62966387df9eebc1d322cf14d89133a51276`
 - Phase 2B Code Review: **PENDING**
-- Phase 2B Codex Visual QA: **PENDING**
+- Phase 2B Codex Visual QA: **PASS**
 - Phase 2B ChatGPT Visual Review: **PENDING**
 - Continuity: **READY**
-- Handoff Sync: **completed by this commit**
-- Next Action: **Implement only Phase 2B Visual Polish.**
+- Next Action: **ChatGPT exact-SHA / Visual Evidence review.**
 - Phase Gate: **Phase 3 is PROHIBITED.**
 
 The Phase 2A implementation at exact SHA `26dfdb29...` remains the latest
-reviewed baseline. The explicit Phase 2B Work Unit authorizes visual polish only
-after this Handoff Sync is committed, pushed, and verified.
+reviewed baseline until ChatGPT approves the Phase 2B Review Target. Phase 2B
+implementation and Codex Visual QA are complete; no further implementation is
+authorized by this state.
 
 ## Cold Start Reading Order
 
@@ -80,14 +83,23 @@ a later phase until `docs/PROJECT_STATE.md` or an explicit task authorizes it.
 
 - Current Phase: **Phase 2B**
 - Work Unit: **Visual Polish**
-- Status: **IMPLEMENTATION_AUTHORIZED_AFTER_HANDOFF_SYNC**
+- Status: **AWAITING_CHATGPT_REVIEW**
 - Latest Reviewed Implementation:
   `26dfdb29aeb9854631d925d594ac7e5aecf73022`
 - Baseline Review Sync:
   `eba4f8e8b39aa03616ebeb5fe9334701cab0c23e`
-- Phase 2B Review Target: **Not created**
-- Allowed implementation: visual presentation layer only
-- Forbidden: gameplay/input/CPU changes and **all Phase 3 work**
+- Phase 2B Handoff Sync:
+  `54bd99d750ffcd47f2a26a2af9ade678591312c6`
+- Phase 2B Review Target:
+  `b6ff62966387df9eebc1d322cf14d89133a51276`
+- Codex Visual QA: **PASS**
+- ChatGPT Review: **PENDING**
+- Evidence:
+  - `docs/evidence/phase-2b/intro.png`
+  - `docs/evidence/phase-2b/countdown.png`
+  - `docs/evidence/phase-2b/result.png`
+- Forbidden: additional implementation and **all Phase 3 work** until a new
+  explicit state transition is recorded.
 
 ## Phase 2A Baseline Receipt
 
