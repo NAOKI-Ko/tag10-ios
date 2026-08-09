@@ -6,6 +6,47 @@ Implement only **Phase 2A — Visual gameplay shell** for the native TAG10 iOS
 app. Connect SpriteKit presentation to the existing rendering-independent
 `GameEngine` without changing Phase 0/1 game rules or balance values.
 
+## Review Sync + Continuity Bootstrap — 2026-08-09
+
+- Formal Work Unit:
+  `Phase 2A Review Sync + Continuity Bootstrap — Work Unit 2026-08-09`
+- Phase: **Phase 2A**
+- Review Target Implementation Commit:
+  `26dfdb29aeb9854631d925d594ac7e5aecf73022`
+- Latest Reviewed Implementation Commit:
+  `c5d79715acaa30f1a70dbf128e3267bbb11223ad`
+- Code Review: **PASS**
+- Codex Visual QA: **PASS**
+- ChatGPT Visual Review: **PENDING**
+- Implementation code changed in this Work Unit: **No**
+- Created `docs/START_HERE.md`, `docs/PROJECT_STATE.md`, and the append-only
+  `docs/REVIEW_LOG.md`.
+- Updated `AGENTS.md` with the Cold Start, no-chat-dependency, state-conflict,
+  review-sync, and phase-gate contract.
+- Verified all three existing Phase 2A evidence files are present, readable, and
+  consistent with the recorded Codex Visual QA result.
+- Existing Build/Test results below were reviewed and retained. They were not
+  rerun because this Work Unit changes documentation/state only.
+- Next Action: **State Snapshot push → ChatGPT exact SHA / Visual Evidence
+  review**
+- Phase Gate: **Do not start Phase 2B or Phase 3.**
+
+### Continuity Acceptance Test
+
+**PASS.** A fresh AI reading only `docs/START_HERE.md` and its ordered Git
+references can recover:
+
+- Project: TAG10
+- Current Phase / Work Unit: Phase 2A / Review Sync + Continuity Bootstrap
+- Latest Reviewed Implementation: `c5d79715...`
+- Review Target Implementation: `26dfdb29...`
+- Code Review: PASS
+- Codex Visual QA: PASS
+- ChatGPT Visual Review: PENDING
+- Next Action: State Snapshot push → exact SHA / Visual Evidence review
+- Phase 2B remains prohibited
+- Source-of-truth reading order and the state-conflict stop rule
+
 ## Implementation
 
 - Connected `GameScene` to one authoritative `GameEngine` match.

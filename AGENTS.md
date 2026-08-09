@@ -3,8 +3,26 @@
 ## Project
 TAG10 is a native iOS adaptation of the existing HTML prototype `prototype/tag10-heat.html`.
 
+## Continuity and cold start
+- A fresh AI session must begin with `docs/START_HERE.md`.
+- Do not depend on prior ChatGPT/Codex conversations, account memory, or an
+  earlier chat handoff to recover project state.
+- Read `docs/PROJECT_STATE.md` before selecting work or deciding which phase to
+  implement.
+- If Notion, Git docs, source, tests, commit history, or the explicit task
+  contradict each other, stop without implementation and report the conflict.
+- Keep `docs/PROJECT_STATE.md`, `docs/CODEX_REPORT.md`, and
+  `docs/REVIEW_LOG.md` current when state, implementation, verification, review,
+  or next action changes.
+- Do not advance to a later phase until `docs/PROJECT_STATE.md` or an explicit
+  user task authorizes it.
+- `docs/REVIEW_LOG.md` is append-only. Record corrections in a new entry rather
+  than rewriting prior review history.
+
 ## Source of truth
-Read these before implementation:
+For a fresh session, follow the complete order in `docs/START_HERE.md` first.
+Then read these implementation sources before implementation:
+
 1. `docs/PRODUCT_SPEC.md`
 2. `docs/GAME_RULES.md`
 3. `docs/IMPLEMENTATION_PLAN.md`
