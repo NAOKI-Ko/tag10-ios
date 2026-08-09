@@ -9,26 +9,29 @@ Recover state from this repository, not prior conversations or account memory.
 - Repository: `NAOKI-Ko/tag10-ios`
 - Branch: `phase-4-cpu-stages`
 - Phase / Work Unit: **Phase 4 — CPU / Stages / HEAT**
-- Status: **IMPLEMENTED / REVIEW PENDING**
+- Status: **CLOSED / APPROVED**
 - Latest Reviewed Implementation:
-  `b6ff62966387df9eebc1d322cf14d89133a51276`
-- Phase 4 Base / Phase 3 implementation:
-  `f1912a965232cb1b9af920f5071ca8fd5f6cb602`
-- Phase 4 Review Target Implementation:
   `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
-- Phase 4 QA / State Snapshot: the commit containing this snapshot; resolve
-  with `git log -1 --format=%H -- docs/START_HERE.md`
+- Phase 4 Implementation:
+  `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
+- Phase 4 QA / Evidence Commit:
+  `d5261099c0012f8743e58cd22f4915982d04611f`
+- Phase 4 Final Review Sync: the commit containing this snapshot; resolve with
+  `git log -1 --format=%H -- docs/START_HERE.md`
+- Phase 4 ChatGPT Code Review: **PASS**
+- Phase 4 ChatGPT Visual Review: **PASS**
+- Phase 4 Simulator QA: **PASS**
+- Phase 4 CPU SHOCK Visual QA: **PASS**
+- Phase 4 Tests: **PASS — 63 XCTest methods, 0 failures**
 - Phase 3 ChatGPT Code Review: **PASS**
+- Phase 3 ChatGPT Visual Review: **PASS**
 - Phase 3 Device Motion QA: **PENDING HUMAN GATE**
 - Phase 3 status: **NOT CLOSED**
-- Phase 4 Codex Code Review: **PASS**
-- Phase 4 Simulator QA: **PARTIAL PASS / BLOCKED ONLY ON CPU SHOCK VISUAL**
-- Phase 4 Evidence: **CAPTURED — `docs/evidence/phase-4/`**
-- Phase 4 ChatGPT Review: **PENDING**
-- Continuity: **BLOCKED ON REVIEW**
-- Next Action: **Push this QA/state snapshot, then request exact-SHA code/state
-  and visual review. Retain the documented CPU SHOCK visual limitation.**
-- Phase Gate: **Do not merge to main and do not begin Phase 5.**
+- Continuity: **READY**
+- Phase 5: **NOT STARTED**
+- Next Work Unit: **Phase 5 — Haptics / Sound / Game Feel**
+- Phase Gate: **Do not start Phase 5 without an explicit Work Unit. Do not
+  start Phase 6 or merge this branch to main automatically.**
 
 ## Cold Start Reading Order
 
@@ -51,38 +54,39 @@ HTML prototype is the reference for feel, CPU behavior, stages, and flow.
 
 1. Confirm branch, upstream, exact HEAD, and a clean worktree.
 2. Read `docs/PROJECT_STATE.md` before choosing work.
-3. Confirm the Phase 4 Review Target is `3486d7d720042fcacf43773ded2ac7c71a8e5a91`.
-4. Confirm 63 XCTest methods pass and inspect Simulator/evidence status,
-   including the CPU SHOCK visual limitation.
-5. Preserve the Phase 3 Device Motion human gate and Phase 3 not-closed state.
-6. Work only on an explicit task; keep state/report/review memory synchronized.
+3. Confirm the Latest Reviewed Implementation is
+   `3486d7d720042fcacf43773ded2ac7c71a8e5a91`.
+4. Preserve Phase 4's approved status and the Phase 3 Device Motion human gate.
+5. Work only on an explicit task; keep state/report/review memory synchronized.
 
 ## Stop Conditions
 
 Stop and report if Notion, Git docs, source, tests, commit history, or explicit
-instructions disagree. Do not infer approval, manufacture visual evidence, or
-advance to Phase 5.
+instructions disagree. Do not infer approval, manufacture evidence, merge to
+main, or advance phases automatically.
 
-## Phase 4 Verification Receipt
+## Phase 4 Final Verification Receipt
 
 - Generic iOS Build: **PASS**
 - Generic iOS Simulator Build: **PASS**
+- iPhone 17 Pro Simulator launch: **PASS**
 - Tests: **PASS — 63 XCTest methods, 0 failures**
-- CPU / HEAT / BOWL / PILLAR / cycling: **UNIT TESTED**
-- Simulator install / launch: **PASS — dedicated iPhone 17 Pro / iOS 26.5**
-- Consecutive match QA: **PASS — 19 matches**, including repeated
-  FLAT → BOWL → PILLAR cycling and per-match HEAT reset.
-- FLAT chase/escape, Direct TAG, PLAYER SHOCK transfer, BOWL, PILLAR, and HEAT:
-  **PASS by Simulator observation plus XCTest**.
-- CPU SHOCK visual trigger: **BLOCKED** by the documented rating 1120 gate;
-  its deterministic logic tests pass and no override was added.
-- Phase 4 evidence: **CAPTURED — six PNG files under
-  `docs/evidence/phase-4/`**
-- ChatGPT Review: **PENDING**
+- Consecutive match QA: **PASS — 19 matches**
+- Stage cycling FLAT → BOWL → PILLAR → FLAT: **PASS**
+- CPU chase / escape / wall avoidance: **PASS**
+- Direct TAG / PLAYER SHOCK / CPU SHOCK: **PASS**
+- BOWL / PILLAR / HEAT: **PASS**
+- CPU SHOCK / STUN visual evidence: **PASS**
+- ChatGPT Code Review: **PASS**
+- ChatGPT Visual Review: **PASS**
+- Final Decision: **APPROVE**
 
 ## Phase 3 Carry-forward Gate
 
 - Implementation: `f1912a965232cb1b9af920f5071ca8fd5f6cb602`
 - ChatGPT Code Review: **PASS**
+- ChatGPT Visual Review: **PASS**
 - Device Motion QA: **PENDING HUMAN GATE**
+- Remaining physical-device checks: neutral calibration, tilt axis/direction,
+  dead-zone feel, clamp feel, latency, and tilt + tap SHOCK.
 - Phase 3: **NOT CLOSED**

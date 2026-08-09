@@ -303,3 +303,41 @@ entries; correct an earlier statement with a new entry that cites it.
 - Phase 4 ChatGPT Code Review: **PENDING**
 - Phase 4 ChatGPT Visual Review: **PENDING**
 - Phase Gate: **Do not merge to `main` and do not begin Phase 5.**
+
+## 2026-08-10 — Phase 4 Final Review
+
+- Branch: `phase-4-cpu-stages`
+- Phase 4 Implementation Commit:
+  `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
+- Reviewed Phase 4 QA / Evidence Commit:
+  `d5261099c0012f8743e58cd22f4915982d04611f`
+- ChatGPT Phase 4 Code Review: **PASS**
+- ChatGPT Phase 4 Visual Review: **PASS**
+- Simulator QA: **PASS**
+- CPU SHOCK Simulator Visual QA: **PASS** — later QA evidence confirmed
+  `CPU SHOCK • STUN`, SHOCK transfer, the new-IT STUN state, and paused timer.
+- Correction to the preceding Recovery / Visual QA entry: its CPU SHOCK
+  visual blocker described the earlier rating-below-1120 run and is now
+  resolved by the later reviewed evidence. The historical entry remains
+  unchanged under the append-only policy.
+- Reviewed visuals: FLAT, BOWL, PILLAR, Direct TAG, SHOCK transfer / STUN,
+  CPU SHOCK / STUN, HEAT, and Result / LOSE overlay.
+- Builds: **PASS — Generic iOS, Generic iOS Simulator, and iPhone 17 Pro
+  Simulator launch**
+- Tests: **PASS — 63 XCTest methods, 0 failures**
+- Consecutive match QA: **PASS — 19 matches**
+- Stage cycling FLAT → BOWL → PILLAR → FLAT: **PASS**
+- Decision: **APPROVE**
+- Latest Reviewed Implementation Commit advanced to:
+  `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
+- Phase status: **Phase 4 CLOSED / APPROVED**
+- Implementation code changed by this Review Sync: **No**
+- Build/Test rerun: **Not required — docs-only Final Review Sync; previously
+  approved results retained**
+- Phase 3 ChatGPT Code / Visual Review: **PASS**
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Phase 3 status: **NOT CLOSED**
+- Phase 5: **NOT STARTED**
+- Next Work Unit: **Phase 5 — Haptics / Sound / Game Feel**
+- Phase Gate: **Do not begin Phase 5 without an explicit Work Unit; do not
+  begin Phase 6 or merge to main automatically.**
