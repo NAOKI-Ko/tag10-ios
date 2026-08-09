@@ -259,3 +259,47 @@ entries; correct an earlier statement with a new entry that cites it.
 - Next Action: run Simulator QA externally, add the required Phase 4 evidence,
   and request exact-SHA code / visual review.
 - Phase Gate: **Do not merge to `main` and do not begin Phase 5.**
+
+## 2026-08-10 — Phase 4 Recovery / Visual QA
+
+- Branch: `phase-4-cpu-stages`
+- Recovery bundle: `/private/tmp/tag10-phase4-3486d7d.bundle`
+- Recovered Phase 4 Implementation:
+  `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
+- Phase 4 QA / docs snapshot: the commit containing this append-only entry
+- Verified parent / Phase 3 baseline:
+  `f1912a965232cb1b9af920f5071ca8fd5f6cb602`
+- Recovery: **PASS** — existing commit restored; no implementation
+  regeneration or gameplay change.
+- GitHub implementation synchronization: **PASS** — local and remote SHA
+  matched exactly before the QA/docs snapshot.
+- Generic iOS Build: **PASS — BUILD SUCCEEDED**
+- Generic iOS Simulator Build: **PASS — BUILD SUCCEEDED**
+- Tests: **PASS — 63 XCTest methods, 0 failures**
+- Simulator: **TAG10 Phase 4 QA / iPhone 17 Pro / iOS 26.5 / portrait**
+- Simulator install / launch: **PASS**
+- FLAT chase / runner escape / wall avoidance: **PASS**
+- Direct TAG: **PASS**
+- PLAYER SHOCK transfer: **PASS**
+- BOWL: **PASS**
+- PILLAR: **PASS**
+- HEAT progression/reset: **PASS**
+- Consecutive match QA: **PASS — 19 matches**
+- CPU SHOCK visual trigger: **BLOCKED** — rating remained below the documented
+  1120 eligibility threshold; deterministic CPU SHOCK XCTest passes and no
+  unauthorized rating/debug override was added.
+- Simulator QA overall: **PARTIAL PASS / BLOCKED ONLY ON CPU SHOCK VISUAL**
+- Evidence:
+  - `docs/evidence/phase-4/flat-cpu.png`
+  - `docs/evidence/phase-4/bowl.png`
+  - `docs/evidence/phase-4/pillar.png`
+  - `docs/evidence/phase-4/direct-tag.png`
+  - `docs/evidence/phase-4/shock-transfer.png`
+  - `docs/evidence/phase-4/heat.png`
+- Phase 3 ChatGPT Code Review: **PASS**
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Phase 3 status: **NOT CLOSED**
+- Phase 4 status: **IMPLEMENTED / REVIEW PENDING**
+- Phase 4 ChatGPT Code Review: **PENDING**
+- Phase 4 ChatGPT Visual Review: **PENDING**
+- Phase Gate: **Do not merge to `main` and do not begin Phase 5.**

@@ -862,3 +862,128 @@ physics, and per-match stage cycling without starting Phase 5 or merging main.
 Run the Phase 4 Simulator checklist outside the restricted sandbox, capture the
 required evidence, and request exact-SHA ChatGPT review. Do not merge main or
 begin Phase 5.
+
+## Phase 4 Recovery / Visual QA (2026-08-10)
+
+### Recovery
+
+- Recovery bundle: `/private/tmp/tag10-phase4-3486d7d.bundle`
+- Bundle verification: **PASS**
+- Recovered implementation:
+  `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
+- QA / docs snapshot: the commit containing this report section
+- Verified parent / Phase 3 baseline:
+  `f1912a965232cb1b9af920f5071ca8fd5f6cb602`
+- Branch: `phase-4-cpu-stages`
+- Recovery result: **PASS** — the existing commit object was fetched from the
+  bundle; Phase 4 source was not regenerated or reimplemented.
+- GitHub implementation push: **PASS** — local and remote implementation SHA
+  matched exactly before this QA/docs update.
+
+### Build / Tests
+
+Generic iOS:
+
+```sh
+xcodebuild \
+  -project TAG10.xcodeproj \
+  -scheme TAG10 \
+  -configuration Debug \
+  -destination 'generic/platform=iOS' \
+  -derivedDataPath /private/tmp/tag10-phase4-recovery-ios \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+Result: **PASS — BUILD SUCCEEDED**.
+
+Generic iOS Simulator:
+
+```sh
+xcodebuild \
+  -project TAG10.xcodeproj \
+  -scheme TAG10 \
+  -configuration Debug \
+  -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath /private/tmp/tag10-phase4-recovery-sim \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+Result: **PASS — BUILD SUCCEEDED**.
+
+The macOS-hosted XCTest bundle was rebuilt and then executed directly:
+
+```sh
+/Applications/Xcode.app/Contents/Developer/usr/bin/xctest \
+  /private/tmp/tag10-phase4-recovery-tests/Build/Products/Debug/TAG10CoreTests.xctest
+```
+
+Result: **PASS — 63 tests executed, 0 failures**. The direct runner was used
+because the standard `xcodebuild test` runner remains sandbox-restricted; this
+is the same generated test bundle.
+
+### Simulator QA
+
+- Device: **TAG10 Phase 4 QA (iPhone 17 Pro)**
+- Runtime: **iOS 26.5**
+- Orientation: **portrait**
+- UDID: `D400D5D1-F7D8-470A-B5B5-DEE63384995D`
+- Install / launch: **PASS**
+- FLAT CPU chase: **PASS** — the CPU IT moved toward the stationary PLAYER;
+  the CPU motion trail showed the chase direction.
+- CPU runner escape and wall avoidance: **PASS** — observed across repeated
+  FLAT/BOWL/PILLAR matches without clipping or permanent edge lock.
+- Direct TAG: **PASS** — DEBUG drag produced authoritative IT transfer; the
+  receiver became IT and the stun/pause path was observed.
+- PLAYER SHOCK: **PASS** — an armed in-range tap produced `SHOCK TAG!`, IT
+  transfer, receiver STUN, and timer pause in one captured frame.
+- CPU SHOCK visual trigger: **BLOCKED** — the documented CPU eligibility gate
+  requires rating 1120. The QA run remained below that rating, and no source,
+  balance, persistence, or debug-rating override was authorized. CPU SHOCK
+  eligibility and transfer remain covered by passing XCTest.
+- BOWL: **PASS** — concentric stage rendering and center-directed motion were
+  observed for both actors; no portrait-axis distortion or speed runaway was
+  seen. Exact force/cap behavior also passed point-space tests.
+- PILLAR: **PASS** — neither normally simulated actor entered the pillar or
+  remained permanently stuck; surface routing remained possible. Collision,
+  tangential movement, TAG, and SHOCK paths are covered by Simulator behavior
+  plus deterministic tests.
+- HEAT: **PASS** — repeated tags increased count/bonus for the shared engine
+  path without visible speed runaway; `HEAT ×2 +6%` was captured. HEAT reset
+  to zero at every new match.
+- Consecutive matches: **PASS — 19 matches**. FLAT → BOWL → PILLAR repeated
+  without crash, timer/IT/stage/cooldown corruption, or stale HEAT state.
+- Simulator QA overall: **PARTIAL PASS / BLOCKED ONLY ON CPU SHOCK VISUAL**.
+
+Static images are evidence of the captured states; motion claims above combine
+direct Simulator observation with the 63-test deterministic suite rather than
+claiming that one still image proves a trajectory.
+
+### Visual Evidence
+
+- `docs/evidence/phase-4/flat-cpu.png`
+- `docs/evidence/phase-4/bowl.png`
+- `docs/evidence/phase-4/pillar.png`
+- `docs/evidence/phase-4/direct-tag.png`
+- `docs/evidence/phase-4/shock-transfer.png`
+- `docs/evidence/phase-4/heat.png`
+
+### Review / Continuity
+
+- Implementation code changed by recovery/QA: **No**
+- Gameplay/balance changes: **None**
+- Phase 3 ChatGPT Code Review: **PASS**
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Phase 3 status: **NOT CLOSED**
+- Phase 4 status: **IMPLEMENTED / REVIEW PENDING**
+- Phase 4 ChatGPT Code Review: **PENDING**
+- Phase 4 ChatGPT Visual Review: **PENDING**
+- Phase 5 started: **No**
+- Main merged: **No**
+
+### Next Suggested Step
+
+Push the separate Phase 4 QA/docs snapshot and request ChatGPT review of exact
+implementation SHA `3486d7d720042fcacf43773ded2ac7c71a8e5a91` together with
+the six evidence images. Do not merge to `main` or begin Phase 5.

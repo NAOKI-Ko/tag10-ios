@@ -21,10 +21,17 @@ Last synchronized: 2026-08-10 (Asia/Tokyo)
 - Phase 3 ChatGPT Code Review: **PASS**
 - Phase 3 Device Motion QA: **PENDING HUMAN GATE**
 - Phase 3 status: **NOT CLOSED**
-- Phase 4 Review Target Implementation Commit: the commit containing this
-  file; resolve with `git log -1 --format=%H -- docs/PROJECT_STATE.md`
+- Phase 4 Review Target Implementation Commit:
+  `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
+- Phase 4 Recovery Base:
+  `f1912a965232cb1b9af920f5071ca8fd5f6cb602`
+- Phase 4 QA / State Snapshot: the commit containing this file; resolve with
+  `git log -1 --format=%H -- docs/PROJECT_STATE.md`
 - Phase 4 Codex Code Review: **PASS**
-- Phase 4 Simulator QA: **BLOCKED — sandbox denied CoreSimulatorService**
+- Phase 4 Simulator QA: **PARTIAL PASS / BLOCKED ONLY ON CPU SHOCK VISUAL**
+- Phase 4 Codex Visual QA: **PARTIAL PASS** — all requested Simulator paths
+  except CPU SHOCK were exercised; CPU SHOCK is rating-gated at 1120 and no
+  gameplay/debug override was authorized.
 - Phase 4 ChatGPT Review: **PENDING**
 - Final Decision: **PENDING**
 
@@ -46,20 +53,27 @@ Last synchronized: 2026-08-10 (Asia/Tokyo)
 
 ## Verification Snapshot
 
+- Generic iOS Build: **PASS — BUILD SUCCEEDED**
 - Generic iOS Simulator Build: **PASS — BUILD SUCCEEDED**
 - Unit Tests: **PASS — 63 XCTest methods, 0 failures**
-- Simulator install / launch / visual QA: **BLOCKED** because the restricted
-  execution environment refused CoreSimulatorService connections. Device
-  discovery alone succeeded and found the booted iPhone 17 Pro / iOS 26.5.
-- Phase 4 evidence: **NOT CAPTURED — do not treat as Visual PASS**
-- Consecutive 5–10 match QA: **NOT RUN — same Simulator blocker**
+- Simulator install / launch: **PASS** — dedicated iPhone 17 Pro / iOS 26.5,
+  portrait, UDID `D400D5D1-F7D8-470A-B5B5-DEE63384995D`.
+- FLAT CPU chase, CPU runner escape, Direct TAG, PLAYER SHOCK transfer, BOWL,
+  PILLAR, HEAT, timer/STUN, and state reset QA: **PASS**.
+- CPU SHOCK visual trigger: **BLOCKED** — current in-memory rating is below the
+  documented 1120 eligibility threshold. Eligibility/transfer logic passes
+  XCTest; no balance or QA-only source override was introduced.
+- Consecutive match QA: **PASS — 19 matches**, with intact
+  FLAT → BOWL → PILLAR cycling, no crash/state corruption, and HEAT reset to
+  zero at each new match.
+- Phase 4 evidence: **CAPTURED** under `docs/evidence/phase-4/`.
 - Phase 3 Device Motion QA: **PENDING HUMAN GATE**
 
 ## Next Action
 
-Run Phase 4 Simulator QA outside the restricted sandbox, capture the required
-evidence under `docs/evidence/phase-4/`, then request ChatGPT exact-SHA code and
-visual review.
+Push the Phase 4 QA/state snapshot, then request ChatGPT exact-SHA code/state
+and visual review. The review receipt must explicitly retain the CPU SHOCK
+visual limitation unless a separate authorized rating-eligible run is supplied.
 
 Do not merge to `main`. Do not begin Phase 5.
 
