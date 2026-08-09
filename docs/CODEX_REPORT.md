@@ -1,5 +1,163 @@
 # CODEX REPORT — TAG10
 
+## Phase 3 Review Fix — 2026-08-09
+
+- Branch: `phase-3-input`
+- Previous Implementation:
+  `e5825496083b9559784da174ce8406c093930fff`
+- Review Fix Target: the commit containing this report section
+- Status: **IMPLEMENTED / REVIEW PENDING**
+- Original ChatGPT Code Review: **CHANGES REQUESTED**
+- ChatGPT Code Review: **FIX IMPLEMENTED / RE-REVIEW PENDING**
+- Codex Code Review: **PASS**
+- Simulator Visual QA: **PASS**
+- Device Motion QA: **PENDING HUMAN GATE**
+- ChatGPT Final Review: **PENDING**
+
+### Objective
+
+Correct the Phase 3 portrait-arena geometry review blockers without changing
+game balance: make movement and knockback isotropic in arena point-space, and
+prevent presentation-layer SHOCK attempts outside `.playing`.
+
+### Implementation
+
+- Added rendering-independent `ArenaGeometry` conversions between normalized
+  authoritative vectors and arena point-space vectors.
+- `PlayerMovement` now converts position and velocity to point-space before
+  applying the existing acceleration, damping, IT speed multiplier, and speed
+  cap, then converts the result back to normalized state and preserves the
+  existing normalized arena bounds.
+- `GameEngine.configureArena` accepts a pure `Vector2` arena size and derives
+  the existing HTML relationship `MAXSPD = arena width * 0.98` without a
+  SpriteKit dependency.
+- Direct TAG and SHOCK transfer knockback now normalizes direction and applies
+  the unchanged `2.2` / `0.85` magnitude multipliers in point-space before
+  converting velocity back to normalized state.
+- `GameScene` supplies arena geometry to GameEngine and ignores player SHOCK
+  presentation attempts unless the authoritative phase is `.playing`.
+- HEAT movement speed remains unimplemented. No Phase 0/1 gameplay value,
+  damping value, multiplier, or game rule changed.
+
+### Changed Files
+
+- `Sources/TAG10Core/GameConfig.swift`
+- `Sources/TAG10Core/GameEngine.swift`
+- `Sources/TAG10Core/PlayerInput.swift`
+- `Sources/TAG10App/GameScene.swift`
+- `Tests/TAG10CoreTests/GameCoreTests.swift`
+- `docs/START_HERE.md`
+- `docs/PROJECT_STATE.md`
+- `docs/REVIEW_LOG.md`
+- `docs/CODEX_REPORT.md`
+- `docs/evidence/phase-3/idle.png`
+- `docs/evidence/phase-3/drag-movement.png`
+
+`docs/evidence/phase-3/shock.png` was inspected against the repaired build and
+retained unchanged because the geometry fix does not alter its presentation
+and the existing frame most clearly shows the effect and cooldown.
+
+### Build
+
+Generic iOS:
+
+```sh
+xcodebuild \
+  -project TAG10.xcodeproj \
+  -scheme TAG10 \
+  -configuration Debug \
+  -destination 'generic/platform=iOS' \
+  -derivedDataPath /tmp/tag10-phase3-review-fix-generic \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+Result: **PASS — BUILD SUCCEEDED**.
+
+iPhone 17 Pro Simulator:
+
+```sh
+xcodebuild \
+  -project TAG10.xcodeproj \
+  -scheme TAG10 \
+  -configuration Debug \
+  -destination 'platform=iOS Simulator,id=9D870918-AC43-4F0C-9C63-49B824D22C5B' \
+  -derivedDataPath /tmp/tag10-phase3-review-fix-simulator \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+Result: **PASS — BUILD SUCCEEDED**.
+
+### Tests
+
+Standard `xcodebuild test` built the exact test bundle but the sandbox denied
+`com.apple.testmanagerd.control` communication before XCTest execution:
+
+```sh
+xcodebuild \
+  -project TAG10.xcodeproj \
+  -scheme TAG10CoreTests \
+  -configuration Debug \
+  -destination 'platform=macOS' \
+  -derivedDataPath /tmp/tag10-phase3-review-fix-tests \
+  CODE_SIGNING_ALLOWED=NO \
+  test
+```
+
+Alternative execution of that exact generated bundle:
+
+```sh
+/Applications/Xcode.app/Contents/Developer/usr/bin/xctest \
+  /tmp/tag10-phase3-review-fix-tests/Build/Products/Debug/TAG10CoreTests.xctest
+```
+
+Result: **PASS — 27 tests executed, 0 failures**. The existing 22 tests remain
+passing. Added coverage verifies rectangular-arena isotropic point movement,
+diagonal point-speed cap, rectangular-arena delta-time independence, and Direct
+TAG / SHOCK point-space knockback direction and magnitude.
+
+### Simulator Launch and Visual QA
+
+- Device: **iPhone 17 Pro**
+- Runtime: **iOS 26.5**
+- Orientation: **portrait**
+- UDID: `9D870918-AC43-4F0C-9C63-49B824D22C5B`
+- Install / launch: **PASS — `com.tag10.app` launched successfully**
+- DEBUG drag: **PASS** — horizontal, vertical, diagonal, and arena edge paths
+  completed without clipping or state corruption.
+- Direct TAG contact: **ATTEMPTED with DEBUG drag** — injected-pointer timing
+  was not treated as conclusive geometry evidence; the exact point-space
+  transfer direction and magnitude passed XCTest.
+- SHOCK state/effect: **PASS**
+- Motion trail: **PASS — direction remained natural and the trail remained
+  bounded / self-removing after the geometry repair**
+- Intro/finished SHOCK guard: **PASS by code inspection** — presentation does
+  not emit an attempt outside `.playing`; GameEngine guard is unchanged.
+
+Evidence:
+
+- `docs/evidence/phase-3/idle.png`
+- `docs/evidence/phase-3/drag-movement.png`
+- `docs/evidence/phase-3/shock.png`
+
+### Deviations / Blockers
+
+- Standard `xcodebuild test` execution is blocked only by the Codex sandbox;
+  direct execution passed the exact compiled bundle.
+- CoreGraphics pointer injection did not yield a deterministic Direct TAG
+  capture, so the attempted contact was not used as proof of aspect-correct
+  knockback. The rendering-independent Direct TAG test passed exactly.
+- Physical-device CoreMotion and simultaneous tilt/tap QA remain
+  **PENDING HUMAN GATE**.
+- No gameplay/balance deviation. Phase 3 is not approved or closed, the branch
+  was not merged to `main`, and Phase 4 was not started.
+
+### Next Suggested Step
+
+ChatGPT exact-SHA code/state re-review of this Review Fix, followed by the
+physical-device Motion Human Gate. Do not advance to Phase 4 automatically.
+
 ## Phase 3 Input Implementation — 2026-08-09
 
 - Branch: `phase-3-input`

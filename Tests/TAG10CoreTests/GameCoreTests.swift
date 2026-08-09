@@ -170,7 +170,8 @@ final class GameCoreTests: XCTestCase {
             input: Vector2(x: 1, y: 0),
             deltaTime: 0.25,
             bounds: .normalized,
-            maximumSpeed: GameConfig.Input.playerMaximumSpeed
+            arenaSize: Vector2(x: 1, y: 1),
+            maximumSpeed: GameConfig.Input.maximumSpeedPerArenaWidth
         )
 
         XCTAssertGreaterThan(moved.position.x, actor.position.x)
@@ -196,6 +197,7 @@ final class GameCoreTests: XCTestCase {
             input: Vector2(x: 1, y: 1),
             deltaTime: 1,
             bounds: bounds,
+            arenaSize: Vector2(x: 1, y: 1),
             maximumSpeed: 1
         )
 
@@ -211,6 +213,7 @@ final class GameCoreTests: XCTestCase {
             input: input,
             deltaTime: 0.5,
             bounds: .normalized,
+            arenaSize: Vector2(x: 1, y: 1),
             maximumSpeed: 1
         )
 
@@ -221,6 +224,7 @@ final class GameCoreTests: XCTestCase {
                 input: input,
                 deltaTime: 1.0 / 60.0,
                 bounds: .normalized,
+                arenaSize: Vector2(x: 1, y: 1),
                 maximumSpeed: 1
             )
         }
@@ -229,6 +233,155 @@ final class GameCoreTests: XCTestCase {
         XCTAssertEqual(oneStep.position.y, manySteps.position.y, accuracy: 0.000_001)
         XCTAssertEqual(oneStep.velocity.x, manySteps.velocity.x, accuracy: 0.000_001)
         XCTAssertEqual(oneStep.velocity.y, manySteps.velocity.y, accuracy: 0.000_001)
+    }
+
+    func testRectangularArenaMovementIsIsotropicInPointSpace() {
+        let arenaSize = Vector2(x: 400, y: 800)
+        let actor = ActorState(position: Vector2(x: 0.5, y: 0.5))
+        let horizontal = PlayerMovement.integrate(
+            actor: actor,
+            input: Vector2(x: 1, y: 0),
+            deltaTime: 0.25,
+            bounds: .normalized,
+            arenaSize: arenaSize,
+            maximumSpeed: 100
+        )
+        let vertical = PlayerMovement.integrate(
+            actor: actor,
+            input: Vector2(x: 0, y: 1),
+            deltaTime: 0.25,
+            bounds: .normalized,
+            arenaSize: arenaSize,
+            maximumSpeed: 100
+        )
+
+        let horizontalDistance = (horizontal.position.x - actor.position.x) * arenaSize.x
+        let verticalDistance = (vertical.position.y - actor.position.y) * arenaSize.y
+        XCTAssertEqual(horizontalDistance, verticalDistance, accuracy: 0.000_001)
+        XCTAssertNotEqual(
+            horizontal.position.x - actor.position.x,
+            vertical.position.y - actor.position.y,
+            accuracy: 0.000_001
+        )
+    }
+
+    func testDiagonalMovementRespectsPointSpaceSpeedCap() {
+        let arenaSize = Vector2(x: 400, y: 800)
+        let initialPointVelocity = Vector2(x: 300, y: 300)
+        let actor = ActorState(
+            position: Vector2(x: 0.5, y: 0.5),
+            velocity: ArenaGeometry.normalizedVector(
+                fromPoints: initialPointVelocity,
+                arenaSize: arenaSize
+            )
+        )
+
+        let moved = PlayerMovement.integrate(
+            actor: actor,
+            input: Vector2(x: 1, y: 1),
+            deltaTime: 1.0 / 60.0,
+            bounds: .normalized,
+            arenaSize: arenaSize,
+            maximumSpeed: 100
+        )
+        let pointVelocity = ArenaGeometry.pointVector(
+            fromNormalized: moved.velocity,
+            arenaSize: arenaSize
+        )
+
+        XCTAssertEqual(pointVelocity.magnitude, 100, accuracy: 0.000_001)
+    }
+
+    func testRectangularArenaMovementIsDeltaTimeIndependent() {
+        let arenaSize = Vector2(x: 400, y: 800)
+        let actor = ActorState(position: Vector2(x: 0.25, y: 0.25))
+        let input = Vector2(x: 0.1, y: -0.05)
+        let oneStep = PlayerMovement.integrate(
+            actor: actor,
+            input: input,
+            deltaTime: 0.5,
+            bounds: .normalized,
+            arenaSize: arenaSize,
+            maximumSpeed: 100
+        )
+
+        var manySteps = actor
+        for _ in 0..<30 {
+            manySteps = PlayerMovement.integrate(
+                actor: manySteps,
+                input: input,
+                deltaTime: 1.0 / 60.0,
+                bounds: .normalized,
+                arenaSize: arenaSize,
+                maximumSpeed: 100
+            )
+        }
+
+        let oneStepPointPosition = ArenaGeometry.pointVector(
+            fromNormalized: oneStep.position,
+            arenaSize: arenaSize
+        )
+        let manyStepPointPosition = ArenaGeometry.pointVector(
+            fromNormalized: manySteps.position,
+            arenaSize: arenaSize
+        )
+        let oneStepPointVelocity = ArenaGeometry.pointVector(
+            fromNormalized: oneStep.velocity,
+            arenaSize: arenaSize
+        )
+        let manyStepPointVelocity = ArenaGeometry.pointVector(
+            fromNormalized: manySteps.velocity,
+            arenaSize: arenaSize
+        )
+
+        XCTAssertEqual(oneStepPointPosition.x, manyStepPointPosition.x, accuracy: 0.000_001)
+        XCTAssertEqual(oneStepPointPosition.y, manyStepPointPosition.y, accuracy: 0.000_001)
+        XCTAssertEqual(oneStepPointVelocity.x, manyStepPointVelocity.x, accuracy: 0.000_001)
+        XCTAssertEqual(oneStepPointVelocity.y, manyStepPointVelocity.y, accuracy: 0.000_001)
+    }
+
+    func testDirectTagKnockbackUsesPointSpaceDirectionAndMagnitude() {
+        let arenaSize = Vector2(x: 400, y: 800)
+        var game = GameEngine(
+            playerStartsAsIt: true,
+            playerPosition: Vector2(x: 0.75, y: 0.75),
+            cpuPosition: Vector2(x: 0.25, y: 0.25),
+            arenaSize: arenaSize,
+            maximumMovementSpeed: 100
+        )
+        game.beginPlay()
+        game.advance(by: GameConfig.initialTagProtectionDuration)
+
+        XCTAssertTrue(game.attemptDirectTag(from: .player))
+
+        assertPointSpaceKnockback(
+            game.player.velocity,
+            arenaSize: arenaSize,
+            expectedDirection: Vector2(x: 200, y: 400).normalized,
+            expectedMagnitude: 100 * GameConfig.directTagKnockbackMultiplier
+        )
+    }
+
+    func testShockKnockbackUsesPointSpaceDirectionAndMagnitude() {
+        let arenaSize = Vector2(x: 400, y: 800)
+        var game = GameEngine(
+            playerStartsAsIt: true,
+            playerPosition: Vector2(x: 0.75, y: 0.75),
+            cpuPosition: Vector2(x: 0.25, y: 0.25),
+            arenaSize: arenaSize,
+            maximumMovementSpeed: 100
+        )
+        game.beginPlay()
+        game.advance(by: GameConfig.shockArmDuration)
+
+        XCTAssertEqual(game.useShock(by: .player, targetIsInRange: true), .transferred)
+
+        assertPointSpaceKnockback(
+            game.player.velocity,
+            arenaSize: arenaSize,
+            expectedDirection: Vector2(x: 200, y: 400).normalized,
+            expectedMagnitude: 100 * GameConfig.shockTagKnockbackMultiplier
+        )
     }
 
     func testShockRangeUsesArenaGeometry() {
@@ -288,5 +441,40 @@ final class GameCoreTests: XCTestCase {
         game.beginPlay()
         game.advance(by: GameConfig.initialTagProtectionDuration)
         return game
+    }
+
+    private func assertPointSpaceKnockback(
+        _ normalizedVelocity: Vector2,
+        arenaSize: Vector2,
+        expectedDirection: Vector2,
+        expectedMagnitude: Double,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let pointVelocity = ArenaGeometry.pointVector(
+            fromNormalized: normalizedVelocity,
+            arenaSize: arenaSize
+        )
+        XCTAssertEqual(
+            pointVelocity.magnitude,
+            expectedMagnitude,
+            accuracy: 0.000_001,
+            file: file,
+            line: line
+        )
+        XCTAssertEqual(
+            pointVelocity.normalized.x,
+            expectedDirection.x,
+            accuracy: 0.000_001,
+            file: file,
+            line: line
+        )
+        XCTAssertEqual(
+            pointVelocity.normalized.y,
+            expectedDirection.y,
+            accuracy: 0.000_001,
+            file: file,
+            line: line
+        )
     }
 }

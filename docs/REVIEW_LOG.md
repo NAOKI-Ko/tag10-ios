@@ -191,3 +191,45 @@ entries; correct an earlier statement with a new entry that cites it.
 - Next Action: **ChatGPT exact-SHA / Visual Evidence review and device Motion
   QA**
 - Phase Gate: **Do not merge to `main` and do not begin Phase 4.**
+
+## 2026-08-09 — Phase 3 Review Fix
+
+- Branch: `phase-3-input`
+- Previous Phase 3 Implementation Commit:
+  `e5825496083b9559784da174ce8406c093930fff`
+- ChatGPT Code Review decision received: **CHANGES REQUESTED**
+- Blocking issue: normalized X/Y movement and knockback calculations produced
+  aspect-distorted screen-space behavior in a portrait arena.
+- Fix: movement position, velocity, acceleration, damping, diagonal speed cap,
+  and Direct TAG / SHOCK knockback direction/magnitude now calculate in pure
+  arena point-space and convert back to normalized authoritative state.
+- Presentation fix: player tap-to-SHOCK attempts are ignored outside
+  `.playing`; the existing GameEngine guard remains intact.
+- Existing gameplay multipliers, damping, IT speed multiplier, arena bounds,
+  and Phase 0/1 balance values: **UNCHANGED**
+- HEAT speed application: **NOT ADDED — OUT OF SCOPE**
+- Generic iOS Build: **PASS — BUILD SUCCEEDED**
+- Simulator Build / Launch: **PASS — iPhone 17 Pro / iOS 26.5 / portrait**
+- Tests: **PASS — 27 XCTest methods, 0 failures**
+- Added tests:
+  - rectangular-arena point-space isotropic movement
+  - diagonal point-space speed cap
+  - rectangular-arena delta-time independence
+  - Direct TAG point-space knockback direction and magnitude
+  - SHOCK point-space knockback direction and magnitude
+- Simulator Visual QA: **PASS** — horizontal, vertical, diagonal, arena edge,
+  SHOCK state, and motion trail checked with DEBUG drag. Direct TAG contact was
+  attempted; injected-pointer timing was not used as geometry proof, while its
+  direction and magnitude passed the exact point-space XCTest.
+- Evidence:
+  - `docs/evidence/phase-3/idle.png`
+  - `docs/evidence/phase-3/drag-movement.png`
+  - `docs/evidence/phase-3/shock.png`
+- Evidence note: `idle.png` and `drag-movement.png` were recaptured after the
+  fix. `shock.png` was retained after confirming the repaired build has the
+  same SHOCK presentation; it remains the clearest cooldown/effect frame.
+- ChatGPT Code Review: **FIX IMPLEMENTED / RE-REVIEW PENDING**
+- Device Motion QA: **PENDING HUMAN GATE**
+- ChatGPT Final Review: **PENDING**
+- Phase status: **IMPLEMENTED / REVIEW PENDING**
+- Phase Gate: **Do not merge to `main` and do not begin Phase 4.**

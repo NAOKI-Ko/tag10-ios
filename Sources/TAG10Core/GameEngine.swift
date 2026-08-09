@@ -8,15 +8,17 @@ public struct GameEngine: Equatable, Sendable {
     public private(set) var cpu: ActorState
     public private(set) var tagProtectionRemaining: TimeInterval
     public private(set) var tagCount: Int
+    public private(set) var arenaSize: Vector2
 
-    /// The arena-relative maximum movement speed is supplied by the renderer.
-    /// Keeping it here lets knockback remain deterministic and testable.
+    /// Point-space maximum movement speed derived from arena width, matching
+    /// the HTML prototype's `MAXSPD = W * 0.98` relationship.
     public var maximumMovementSpeed: Double
 
     public init(
         playerStartsAsIt: Bool,
         playerPosition: Vector2 = .zero,
         cpuPosition: Vector2 = .zero,
+        arenaSize: Vector2 = Vector2(x: 1, y: 1),
         maximumMovementSpeed: Double = 1.0
     ) {
         phase = .intro
@@ -33,20 +35,31 @@ public struct GameEngine: Equatable, Sendable {
         )
         tagProtectionRemaining = GameConfig.initialTagProtectionDuration
         tagCount = 0
+        self.arenaSize = arenaSize
         self.maximumMovementSpeed = maximumMovementSpeed
     }
 
     public static func randomMatch(
         playerPosition: Vector2 = .zero,
         cpuPosition: Vector2 = .zero,
+        arenaSize: Vector2 = Vector2(x: 1, y: 1),
         maximumMovementSpeed: Double = 1.0
     ) -> GameEngine {
         GameEngine(
             playerStartsAsIt: Bool.random(),
             playerPosition: playerPosition,
             cpuPosition: cpuPosition,
+            arenaSize: arenaSize,
             maximumMovementSpeed: maximumMovementSpeed
         )
+    }
+
+    /// Receives renderer geometry as plain numeric values. Gameplay physics
+    /// remains independent of SpriteKit while matching point-space behavior.
+    public mutating func configureArena(size: Vector2) {
+        guard size.x > 0, size.y > 0 else { return }
+        arenaSize = size
+        maximumMovementSpeed = size.x * GameConfig.Input.maximumSpeedPerArenaWidth
     }
 
     public var isTimerPaused: Bool {
@@ -97,6 +110,7 @@ public struct GameEngine: Equatable, Sendable {
             input: input,
             deltaTime: deltaTime,
             bounds: bounds,
+            arenaSize: arenaSize,
             maximumSpeed: maximumMovementSpeed
         )
     }
@@ -164,11 +178,18 @@ public struct GameEngine: Equatable, Sendable {
         receiver.velocity = .zero
         receiver.shockCooldownRemaining = GameConfig.shockArmDuration
 
-        let direction = (pusher.position - receiver.position).normalized
+        let pointDirection = ArenaGeometry.pointVector(
+            fromNormalized: pusher.position - receiver.position,
+            arenaSize: arenaSize
+        ).normalized
         let multiplier = kind == .direct
             ? GameConfig.directTagKnockbackMultiplier
             : GameConfig.shockTagKnockbackMultiplier
-        pusher.velocity = direction * (maximumMovementSpeed * multiplier)
+        let pointVelocity = pointDirection * (maximumMovementSpeed * multiplier)
+        pusher.velocity = ArenaGeometry.normalizedVector(
+            fromPoints: pointVelocity,
+            arenaSize: arenaSize
+        )
 
         setActor(pusher, for: pusherID)
         setActor(receiver, for: receiverID)

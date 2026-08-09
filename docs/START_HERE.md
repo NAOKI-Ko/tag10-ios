@@ -18,12 +18,17 @@ ChatGPT/Codex conversations, account memory, or an earlier handoff message.
   `292c31d581e5cddcf2270db1feb35cb8c0caf7b9`
 - Phase 3 Review Target Implementation Commit: the commit containing this
   snapshot; resolve with `git log -1 --format=%H -- docs/START_HERE.md`
+- Previous Phase 3 Implementation Commit:
+  `e5825496083b9559784da174ce8406c093930fff`
+- ChatGPT Code Review: **FIX IMPLEMENTED / RE-REVIEW PENDING**
+- Original Review Decision: **CHANGES REQUESTED**
 - Codex Code Review: **PASS**
 - Simulator Visual QA: **PASS**
 - Device Motion QA: **PENDING HUMAN GATE**
 - ChatGPT Final Review: **PENDING**
 - Continuity: **BLOCKED ON REVIEW**
-- Next Action: **ChatGPT exact-SHA code/state and Visual Evidence review.**
+- Next Action: **ChatGPT exact-SHA Review Fix re-review and Visual Evidence
+  review.**
 - Phase Gate: **Phase 4 is PROHIBITED.**
 
 Phase 3 input implementation is complete on its dedicated branch but is not
@@ -83,7 +88,9 @@ a later phase until `docs/PROJECT_STATE.md` or an explicit task authorizes it.
   tap-to-SHOCK, DEBUG drag fallback, and motion-trail validation
 - Generic iOS Build: **PASS — BUILD SUCCEEDED**
 - Simulator Build / Launch: **PASS — iPhone 17 Pro / iOS 26.5 / portrait**
-- Tests: **PASS — 22 XCTest methods, 0 failures**
+- Review Fix: **point-space isotropic movement and Direct TAG / SHOCK
+  knockback geometry implemented; intro/finished SHOCK presentation blocked**
+- Tests: **PASS — 27 XCTest methods, 0 failures**
 - Simulator Visual QA: **PASS**
 - Evidence:
   - `docs/evidence/phase-3/idle.png`

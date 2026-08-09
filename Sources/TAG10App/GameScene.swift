@@ -36,8 +36,7 @@ final class GameScene: SKScene {
 
     private var engine = GameEngine.randomMatch(
         playerPosition: Vector2(x: 0.30, y: 0.28),
-        cpuPosition: Vector2(x: 0.70, y: 0.75),
-        maximumMovementSpeed: GameConfig.Input.playerMaximumSpeed
+        cpuPosition: Vector2(x: 0.70, y: 0.75)
     )
 
     private let motionInputController = MotionInputController()
@@ -224,6 +223,7 @@ final class GameScene: SKScene {
     }
 
     private func layoutScene() {
+        engine.configureArena(size: arenaSizeVector)
         arenaLayer.removeAllChildren()
         drawFlatArena(in: arenaFrame)
 
@@ -348,6 +348,8 @@ final class GameScene: SKScene {
     }
 
     private func attemptPlayerShock() {
+        guard engine.phase == .playing else { return }
+
         let targetIsInRange = CollisionRules.isShockTargetInRange(
             ownerPosition: engine.player.position,
             targetPosition: engine.cpu.position,

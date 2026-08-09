@@ -20,6 +20,10 @@ Last synchronized: 2026-08-09 (Asia/Tokyo)
   `292c31d581e5cddcf2270db1feb35cb8c0caf7b9`
 - Phase 3 Review Target Implementation Commit: the commit containing this file;
   resolve with `git log -1 --format=%H -- docs/PROJECT_STATE.md`
+- Previous Phase 3 Implementation Commit:
+  `e5825496083b9559784da174ce8406c093930fff`
+- ChatGPT Code Review: **FIX IMPLEMENTED / RE-REVIEW PENDING**
+- Original Review Decision: **CHANGES REQUESTED**
 - Codex Code Review: **PASS**
 - Simulator Visual QA: **PASS**
 - Device Motion QA: **PENDING HUMAN GATE**
@@ -31,10 +35,14 @@ Last synchronized: 2026-08-09 (Asia/Tokyo)
 - CoreMotion `deviceMotion` adapter: **IMPLEMENTED**
 - Neutral-angle calibration: **IMPLEMENTED — first valid attitude sample**
 - Dead-zone and clamped tilt mapping: **IMPLEMENTED / UNIT TESTED**
-- Player-only delta-time-independent movement: **IMPLEMENTED / UNIT TESTED**
+- Player-only point-space isotropic movement: **IMPLEMENTED / UNIT TESTED**
+- Rectangular-arena delta-time independence and diagonal point-speed cap:
+  **IMPLEMENTED / UNIT TESTED**
 - Authoritative GameEngine position and arena bounds: **IMPLEMENTED / UNIT TESTED**
+- Direct TAG / SHOCK point-space knockback geometry: **IMPLEMENTED / UNIT TESTED**
 - DEBUG drag fallback: **IMPLEMENTED / SIMULATOR PASS**
 - Tap-to-SHOCK using GameEngine: **IMPLEMENTED / SIMULATOR PASS**
+- Intro/finished SHOCK presentation guard: **IMPLEMENTED**
 - Shock outcomes (`unavailable`, `missed`, `transferred`): **UNIT TESTED**
 - Motion trail on real player movement: **SIMULATOR VISUAL PASS**
 - CPU movement / AI / Shock AI: **NOT IMPLEMENTED — OUT OF SCOPE**
@@ -44,7 +52,7 @@ Last synchronized: 2026-08-09 (Asia/Tokyo)
 
 - Generic iOS Build: **PASS — BUILD SUCCEEDED**
 - Simulator Build: **PASS — BUILD SUCCEEDED**
-- Tests: **PASS — 22 XCTest methods, 0 failures**
+- Tests: **PASS — 27 XCTest methods, 0 failures**
 - Simulator Launch: **PASS — iPhone 17 Pro / iOS 26.5 / portrait**
 - Simulator motion availability fallback: **PASS — no crash, DEBUG drag enabled**
 - Evidence:
@@ -59,7 +67,7 @@ Last synchronized: 2026-08-09 (Asia/Tokyo)
 
 ## Next Action
 
-**ChatGPT exact-SHA code/state and Visual Evidence review, followed by
+**ChatGPT exact-SHA re-review of the Phase 3 Review Fix, followed by
 physical-device Motion QA.**
 
 Do not advance Latest Reviewed Implementation until the Phase 3 Review Target

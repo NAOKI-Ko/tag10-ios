@@ -89,6 +89,18 @@ public struct MovementBounds: Equatable, Sendable {
     }
 }
 
+/// Pure conversion between authoritative normalized state and arena points.
+public enum ArenaGeometry {
+    public static func pointVector(fromNormalized vector: Vector2, arenaSize: Vector2) -> Vector2 {
+        Vector2(x: vector.x * arenaSize.x, y: vector.y * arenaSize.y)
+    }
+
+    public static func normalizedVector(fromPoints vector: Vector2, arenaSize: Vector2) -> Vector2 {
+        guard arenaSize.x > 0, arenaSize.y > 0 else { return .zero }
+        return Vector2(x: vector.x / arenaSize.x, y: vector.y / arenaSize.y)
+    }
+}
+
 /// Pure movement integration shared by gameplay orchestration and unit tests.
 public enum PlayerMovement {
     public static func integrate(
@@ -96,9 +108,13 @@ public enum PlayerMovement {
         input: Vector2,
         deltaTime: TimeInterval,
         bounds: MovementBounds,
+        arenaSize: Vector2,
         maximumSpeed: Double
     ) -> ActorState {
-        guard deltaTime > 0, !actor.isStunned else { return actor }
+        guard deltaTime > 0,
+              !actor.isStunned,
+              arenaSize.x > 0,
+              arenaSize.y > 0 else { return actor }
 
         let clampedInput = input.magnitude > 1 ? input.normalized : input
         let speedLimit = maximumSpeed * (actor.isIt ? GameConfig.itSpeedMultiplier : 1)
@@ -106,35 +122,46 @@ public enum PlayerMovement {
         let dampingRate = -60 * log(GameConfig.Input.dampingPerSixtiethSecond)
         let decay = exp(-dampingRate * deltaTime)
 
-        let initialVelocity = actor.velocity
-        var velocity = Vector2(
-            x: initialVelocity.x * decay
+        let initialPointVelocity = ArenaGeometry.pointVector(
+            fromNormalized: actor.velocity,
+            arenaSize: arenaSize
+        )
+        let initialPointPosition = ArenaGeometry.pointVector(
+            fromNormalized: actor.position,
+            arenaSize: arenaSize
+        )
+        var pointVelocity = Vector2(
+            x: initialPointVelocity.x * decay
                 + clampedInput.x * acceleration * (1 - decay) / dampingRate,
-            y: initialVelocity.y * decay
+            y: initialPointVelocity.y * decay
                 + clampedInput.y * acceleration * (1 - decay) / dampingRate
         )
-        if velocity.magnitude > speedLimit {
-            velocity = velocity.normalized * speedLimit
+        if pointVelocity.magnitude > speedLimit {
+            pointVelocity = pointVelocity.normalized * speedLimit
         }
 
         let accelerationPositionFactor = deltaTime / dampingRate
             - (1 - decay) / (dampingRate * dampingRate)
-        var position = Vector2(
-            x: actor.position.x
-                + initialVelocity.x * (1 - decay) / dampingRate
+        let pointPosition = Vector2(
+            x: initialPointPosition.x
+                + initialPointVelocity.x * (1 - decay) / dampingRate
                 + clampedInput.x * acceleration * accelerationPositionFactor,
-            y: actor.position.y
-                + initialVelocity.y * (1 - decay) / dampingRate
+            y: initialPointPosition.y
+                + initialPointVelocity.y * (1 - decay) / dampingRate
                 + clampedInput.y * acceleration * accelerationPositionFactor
         )
+        var position = ArenaGeometry.normalizedVector(fromPoints: pointPosition, arenaSize: arenaSize)
         let unclampedPosition = position
         position = bounds.clamped(position)
-        if position.x != unclampedPosition.x { velocity.x = 0 }
-        if position.y != unclampedPosition.y { velocity.y = 0 }
+        if position.x != unclampedPosition.x { pointVelocity.x = 0 }
+        if position.y != unclampedPosition.y { pointVelocity.y = 0 }
 
         var updatedActor = actor
         updatedActor.position = position
-        updatedActor.velocity = velocity
+        updatedActor.velocity = ArenaGeometry.normalizedVector(
+            fromPoints: pointVelocity,
+            arenaSize: arenaSize
+        )
         return updatedActor
     }
 }
@@ -146,10 +173,10 @@ public enum CollisionRules {
         to target: Vector2,
         arenaSize: Vector2
     ) -> Double {
-        hypot(
-            (target.x - source.x) * arenaSize.x,
-            (target.y - source.y) * arenaSize.y
-        )
+        ArenaGeometry.pointVector(
+            fromNormalized: target - source,
+            arenaSize: arenaSize
+        ).magnitude
     }
 
     public static func isDirectTagInRange(

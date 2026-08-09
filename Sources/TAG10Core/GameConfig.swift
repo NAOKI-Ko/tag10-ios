@@ -24,7 +24,7 @@ public enum GameConfig {
         public static let motionUpdateInterval: TimeInterval = 1.0 / 60.0
         public static let tiltDeadZoneRadians = 0.05
         public static let tiltFullScaleRadians = 32.0 * .pi / 180.0
-        public static let playerMaximumSpeed = 0.98
+        public static let maximumSpeedPerArenaWidth = 0.98
         public static let accelerationMultiplier = 7.0
         public static let dampingPerSixtiethSecond = 0.86
         public static let debugDragActivationDistance: Double = 8.0
