@@ -17,9 +17,9 @@ public enum GameConfig {
     public static let initialTagProtectionDuration: TimeInterval = 0.6
     public static let postSwapTagProtectionBuffer: TimeInterval = 0.3
 
-    /// Phase 3 input values. Movement values preserve the HTML prototype's
+    /// Movement values preserve the HTML prototype's
     /// FLAT-stage relationship (`MAXSPD = width * 0.98`, `ACCEL = MAXSPD * 7`)
-    /// without applying the deferred HEAT speed bonus.
+    /// point-space relationships.
     public enum Input {
         public static let motionUpdateInterval: TimeInterval = 1.0 / 60.0
         public static let tiltDeadZoneRadians = 0.05
@@ -35,6 +35,29 @@ public enum GameConfig {
     public enum Range {
         public static let directTagActorRadii = 2.0
         public static let shockActorRadii = 4.0
+    }
+
+    public enum CPU {
+        public static let baselineRating = 1_000
+        public static let leadBase = 0.06
+        public static let leadPerRatingDelta = 0.15 / 1_200.0
+        public static let minimumLead = 0.04
+        public static let maximumLead = 0.28
+        public static let jitterBase = 0.34
+        public static let jitterPerRatingDelta = 0.28 / 1_200.0
+        public static let minimumJitter = 0.03
+        public static let maximumJitter = 0.40
+        public static let wallMarginActorRadii = 4.0
+        public static let wallAvoidanceWeight = 0.9
+        public static let centerBiasWeight = 0.4
+        public static let shockRatingThreshold = 1_120
+        public static let shockRangeMultiplier = 0.9
+    }
+
+    public enum Stage {
+        public static let bowlCenterAcceleration = 3.2
+        public static let bowlSpeedCapMultiplier = 1.25
+        public static let pillarRadiusActorRadii = 2.6
     }
 
     /// Multipliers used by the HTML reference implementation. The native

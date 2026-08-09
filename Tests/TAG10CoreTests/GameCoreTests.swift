@@ -431,6 +431,289 @@ final class GameCoreTests: XCTestCase {
         )
     }
 
+    // MARK: - Phase 4 CPU
+
+    func testCPUChasesPlayerWhenIt() {
+        let input = cpuInput(
+            cpu: ActorState(position: Vector2(x: 0.2, y: 0.5), isIt: true),
+            player: ActorState(position: Vector2(x: 0.8, y: 0.5))
+        )
+        XCTAssertGreaterThan(input.x, 0)
+        XCTAssertEqual(input.y, 0, accuracy: 0.000_001)
+    }
+
+    func testCPUChaseLeadsMovingPlayer() {
+        let arena = Vector2(x: 400, y: 800)
+        let player = ActorState(
+            position: Vector2(x: 0.5, y: 0.5),
+            velocity: ArenaGeometry.normalizedVector(
+                fromPoints: Vector2(x: 0, y: 100), arenaSize: arena
+            )
+        )
+        let input = CPUController.input(
+            cpu: ActorState(position: Vector2(x: 0.2, y: 0.5), isIt: true),
+            player: player,
+            arenaSize: arena,
+            actorRadius: 18,
+            rating: 1_000,
+            jitterSample: .zero
+        )
+        XCTAssertGreaterThan(input.y, 0)
+    }
+
+    func testCPUEscapesPlayerWhenRunner() {
+        let input = cpuInput(
+            cpu: ActorState(position: Vector2(x: 0.2, y: 0.5)),
+            player: ActorState(position: Vector2(x: 0.8, y: 0.5))
+        )
+        XCTAssertLessThan(input.x, 0)
+    }
+
+    func testCPURunnerAvoidsNearbyWall() {
+        let input = cpuInput(
+            cpu: ActorState(position: Vector2(x: 0.02, y: 0.5)),
+            player: ActorState(position: Vector2(x: 0.8, y: 0.5))
+        )
+        XCTAssertGreaterThan(input.x, 0)
+    }
+
+    func testCPUInputMagnitudeIsNormalized() {
+        let input = cpuInput(
+            cpu: ActorState(position: Vector2(x: 0.2, y: 0.2), isIt: true),
+            player: ActorState(position: Vector2(x: 0.8, y: 0.9)),
+            jitter: Vector2(x: 1, y: -1)
+        )
+        XCTAssertEqual(input.magnitude, 1, accuracy: 0.000_001)
+    }
+
+    func testCPUInputIsDeterministicWithInjectedJitter() {
+        let cpu = ActorState(position: Vector2(x: 0.2, y: 0.2), isIt: true)
+        let player = ActorState(position: Vector2(x: 0.8, y: 0.9))
+        let first = cpuInput(cpu: cpu, player: player, jitter: Vector2(x: 0.4, y: -0.2))
+        let second = cpuInput(cpu: cpu, player: player, jitter: Vector2(x: 0.4, y: -0.2))
+        XCTAssertEqual(first, second)
+    }
+
+    func testHigherRatingIncreasesCPULead() {
+        XCTAssertGreaterThan(CPUDifficulty(rating: 1_600).lead, CPUDifficulty(rating: 1_000).lead)
+    }
+
+    func testHigherRatingReducesCPUJitter() {
+        XCTAssertLessThan(CPUDifficulty(rating: 1_600).jitter, CPUDifficulty(rating: 1_000).jitter)
+    }
+
+    func testCPUShockRequiresRatingThreshold() {
+        let cpu = ActorState(position: Vector2(x: 0.5, y: 0.5), isIt: true)
+        let player = ActorState(position: Vector2(x: 0.51, y: 0.5))
+        XCTAssertFalse(cpuShouldShock(cpu: cpu, player: player, rating: 1_119))
+        XCTAssertTrue(cpuShouldShock(cpu: cpu, player: player, rating: 1_120))
+    }
+
+    func testCPUShockRequiresNinetyPercentRange() {
+        let cpu = ActorState(position: Vector2(x: 0.5, y: 0.5), isIt: true)
+        XCTAssertTrue(cpuShouldShock(
+            cpu: cpu, player: ActorState(position: Vector2(x: 0.58, y: 0.5)), rating: 1_120
+        ))
+        XCTAssertFalse(cpuShouldShock(
+            cpu: cpu, player: ActorState(position: Vector2(x: 0.68, y: 0.5)), rating: 1_120
+        ))
+    }
+
+    func testCPUShockRequiresCooldownReady() {
+        let cpu = ActorState(
+            position: Vector2(x: 0.5, y: 0.5), isIt: true, shockCooldownRemaining: 0.1
+        )
+        XCTAssertFalse(cpuShouldShock(
+            cpu: cpu, player: ActorState(position: Vector2(x: 0.51, y: 0.5)), rating: 1_120
+        ))
+    }
+
+    func testCPUShockRequiresCPUNotStunned() {
+        let cpu = ActorState(
+            position: Vector2(x: 0.5, y: 0.5), isIt: true, stunRemaining: 0.1
+        )
+        XCTAssertFalse(cpuShouldShock(
+            cpu: cpu, player: ActorState(position: Vector2(x: 0.51, y: 0.5)), rating: 1_120
+        ))
+    }
+
+    func testCPUShockRequiresCPUToBeIt() {
+        let cpu = ActorState(position: Vector2(x: 0.5, y: 0.5), isIt: false)
+        XCTAssertFalse(cpuShouldShock(
+            cpu: cpu, player: ActorState(position: Vector2(x: 0.51, y: 0.5)), rating: 1_120
+        ))
+    }
+
+    // MARK: - Phase 4 HEAT movement
+
+    func testHeatAfterOneTagIsThreePercent() {
+        XCTAssertEqual(GameConfig.heatMultiplier(tagCount: 1), 1.03, accuracy: 0.000_001)
+    }
+
+    func testHeatAfterEightTagsIsTwentyFourPercent() {
+        XCTAssertEqual(GameConfig.heatMultiplier(tagCount: 8), 1.24, accuracy: 0.000_001)
+    }
+
+    func testHeatBeyondEightTagsRemainsCapped() {
+        XCTAssertEqual(GameConfig.heatMultiplier(tagCount: 9), 1.24, accuracy: 0.000_001)
+    }
+
+    func testHeatSpeedAppliesEquallyToPlayerAndCPUPrimitive() {
+        let actor = ActorState(position: Vector2(x: 0.5, y: 0.5), velocity: Vector2(x: 10, y: 0))
+        let first = movedAtCap(actor: actor, heat: 1.12)
+        let second = movedAtCap(actor: actor, heat: 1.12)
+        XCTAssertEqual(pointSpeed(first), pointSpeed(second), accuracy: 0.000_001)
+        XCTAssertEqual(pointSpeed(first), 112, accuracy: 0.000_001)
+    }
+
+    func testITAndHeatSpeedMultipliersCompose() {
+        let actor = ActorState(
+            position: Vector2(x: 0.5, y: 0.5), velocity: Vector2(x: 10, y: 0), isIt: true
+        )
+        let moved = movedAtCap(actor: actor, heat: 1.24)
+        XCTAssertEqual(pointSpeed(moved), 100 * 1.13 * 1.24, accuracy: 0.000_001)
+    }
+
+    func testHeatMovementRemainsIsotropicInRectangularArena() {
+        let arena = Vector2(x: 400, y: 800)
+        let actor = ActorState(position: Vector2(x: 0.5, y: 0.5))
+        let horizontal = ActorMovement.integrate(
+            actor: actor, input: Vector2(x: 1, y: 0), deltaTime: 0.2,
+            bounds: .normalized, arenaSize: arena, maximumSpeed: 100, heatMultiplier: 1.24
+        )
+        let vertical = ActorMovement.integrate(
+            actor: actor, input: Vector2(x: 0, y: 1), deltaTime: 0.2,
+            bounds: .normalized, arenaSize: arena, maximumSpeed: 100, heatMultiplier: 1.24
+        )
+        XCTAssertEqual(
+            (horizontal.position.x - 0.5) * arena.x,
+            (vertical.position.y - 0.5) * arena.y,
+            accuracy: 0.000_001
+        )
+    }
+
+    // MARK: - Phase 4 BOWL
+
+    func testBowlForceAcceleratesTowardCenter() {
+        let moved = bowlMove(position: Vector2(x: 0.2, y: 0.5))
+        XCTAssertGreaterThan(moved.velocity.x, 0)
+    }
+
+    func testBowlCenterHasNoCenterForce() {
+        let moved = bowlMove(position: Vector2(x: 0.5, y: 0.5))
+        XCTAssertEqual(moved.velocity, .zero)
+    }
+
+    func testBowlSpeedCapIsOnePointTwoFiveTimesNormal() {
+        let actor = ActorState(position: Vector2(x: 0.5, y: 0.5), velocity: Vector2(x: 10, y: 0))
+        let moved = ActorMovement.integrate(
+            actor: actor, input: .zero, deltaTime: 0.01, bounds: .normalized,
+            arenaSize: Vector2(x: 400, y: 800), maximumSpeed: 100, stage: .bowl
+        )
+        XCTAssertEqual(pointSpeed(moved), 125, accuracy: 0.000_001)
+    }
+
+    func testBowlRulesApplyToBothEngineActors() {
+        var game = GameEngine(
+            playerStartsAsIt: true,
+            playerPosition: Vector2(x: 0.25, y: 0.5),
+            cpuPosition: Vector2(x: 0.75, y: 0.5),
+            arenaSize: Vector2(x: 400, y: 800),
+            maximumMovementSpeed: 100,
+            stage: .bowl
+        )
+        game.beginPlay()
+        game.movePlayer(input: .zero, deltaTime: 0.01, bounds: .normalized)
+        game.moveCPU(input: .zero, deltaTime: 0.01, bounds: .normalized)
+        XCTAssertEqual(pointSpeed(game.player), pointSpeed(game.cpu), accuracy: 0.000_001)
+    }
+
+    func testBowlForceUsesPointSpaceInRectangularArena() {
+        let horizontal = bowlMove(position: Vector2(x: 0.25, y: 0.5))
+        let vertical = bowlMove(position: Vector2(x: 0.5, y: 0.375))
+        XCTAssertEqual(pointSpeed(horizontal), pointSpeed(vertical), accuracy: 0.000_001)
+    }
+
+    // MARK: - Phase 4 PILLAR
+
+    func testPillarPushesActorOutsideCollisionRadius() {
+        let result = pillarResolve(position: Vector2(x: 0.5, y: 0.5), velocity: .zero)
+        XCTAssertEqual(pillarDistance(result.position), 36, accuracy: 0.000_001)
+    }
+
+    func testPillarMaintainsMinimumDistance() {
+        let result = pillarResolve(position: Vector2(x: 0.54, y: 0.5), velocity: .zero)
+        XCTAssertEqual(pillarDistance(result.position), 36, accuracy: 0.000_001)
+    }
+
+    func testPillarRemovesInwardRadialVelocity() {
+        let result = pillarResolve(
+            position: Vector2(x: 0.54, y: 0.5), velocity: Vector2(x: -30, y: 0)
+        )
+        XCTAssertEqual(result.pointVelocity.x, 0, accuracy: 0.000_001)
+    }
+
+    func testPillarPreservesTangentialVelocity() {
+        let result = pillarResolve(
+            position: Vector2(x: 0.54, y: 0.5), velocity: Vector2(x: -30, y: 24)
+        )
+        XCTAssertEqual(result.pointVelocity.y, 24, accuracy: 0.000_001)
+    }
+
+    func testPillarRulesApplyToBothEngineActors() {
+        let arena = Vector2(x: 400, y: 800)
+        var game = GameEngine(
+            playerStartsAsIt: true,
+            playerPosition: Vector2(x: 0.5, y: 0.5),
+            cpuPosition: Vector2(x: 0.5, y: 0.5),
+            arenaSize: arena,
+            maximumMovementSpeed: 100,
+            actorRadius: 10,
+            stage: .pillar
+        )
+        game.beginPlay()
+        game.movePlayer(input: .zero, deltaTime: 0.01, bounds: .normalized)
+        game.moveCPU(input: .zero, deltaTime: 0.01, bounds: .normalized)
+        XCTAssertEqual(pillarDistance(game.player.position), 36, accuracy: 0.000_001)
+        XCTAssertEqual(pillarDistance(game.cpu.position), 36, accuracy: 0.000_001)
+    }
+
+    // MARK: - Phase 4 stage cycling and regression
+
+    func testStageCycleStartsWithFlat() {
+        XCTAssertEqual(MatchSeriesState().currentStage, .flat)
+    }
+
+    func testStageCycleAdvancesFlatBowlPillar() {
+        var series = MatchSeriesState()
+        series.advance()
+        XCTAssertEqual(series.currentStage, .bowl)
+        series.advance()
+        XCTAssertEqual(series.currentStage, .pillar)
+    }
+
+    func testStageCycleWrapsBackToFlat() {
+        var series = MatchSeriesState(matchIndex: 2)
+        series.advance()
+        XCTAssertEqual(series.currentStage, .flat)
+    }
+
+    func testPhaseFourTimerPauseRegression() {
+        testTimerDoesNotDecreaseWhileEitherActorIsStunned()
+    }
+
+    func testPhaseFourDirectTagRegression() {
+        testDirectContactSwapsItState()
+    }
+
+    func testPhaseFourShockRegression() {
+        testInRangeShockTransfersItState()
+    }
+
+    func testPhaseFourBoundsRegression() {
+        testMovementClampsToArenaBounds()
+    }
+
     private func readyForTag(playerStartsAsIt: Bool) -> GameEngine {
         var game = GameEngine(
             playerStartsAsIt: playerStartsAsIt,
@@ -441,6 +724,82 @@ final class GameCoreTests: XCTestCase {
         game.beginPlay()
         game.advance(by: GameConfig.initialTagProtectionDuration)
         return game
+    }
+
+    private func cpuInput(
+        cpu: ActorState,
+        player: ActorState,
+        jitter: Vector2 = .zero
+    ) -> Vector2 {
+        CPUController.input(
+            cpu: cpu,
+            player: player,
+            arenaSize: Vector2(x: 400, y: 800),
+            actorRadius: 18,
+            rating: 1_000,
+            jitterSample: jitter
+        )
+    }
+
+    private func cpuShouldShock(cpu: ActorState, player: ActorState, rating: Int) -> Bool {
+        CPUController.shouldUseShock(
+            cpu: cpu,
+            player: player,
+            rating: rating,
+            arenaSize: Vector2(x: 400, y: 800),
+            actorRadius: 18
+        )
+    }
+
+    private func movedAtCap(actor: ActorState, heat: Double) -> ActorState {
+        ActorMovement.integrate(
+            actor: actor,
+            input: .zero,
+            deltaTime: 0.01,
+            bounds: .normalized,
+            arenaSize: Vector2(x: 400, y: 800),
+            maximumSpeed: 100,
+            heatMultiplier: heat
+        )
+    }
+
+    private func pointSpeed(_ actor: ActorState) -> Double {
+        ArenaGeometry.pointVector(
+            fromNormalized: actor.velocity,
+            arenaSize: Vector2(x: 400, y: 800)
+        ).magnitude
+    }
+
+    private func bowlMove(position: Vector2) -> ActorState {
+        ActorMovement.integrate(
+            actor: ActorState(position: position),
+            input: .zero,
+            deltaTime: 0.01,
+            bounds: .normalized,
+            arenaSize: Vector2(x: 400, y: 800),
+            maximumSpeed: 100,
+            stage: .bowl
+        )
+    }
+
+    private func pillarResolve(
+        position: Vector2,
+        velocity: Vector2
+    ) -> (position: Vector2, pointVelocity: Vector2) {
+        PillarCollision.resolve(
+            position: position,
+            pointVelocity: velocity,
+            arenaSize: Vector2(x: 400, y: 800),
+            minimumDistance: 36
+        )
+    }
+
+    private func pillarDistance(_ position: Vector2) -> Double {
+        let point = ArenaGeometry.pointVector(
+            fromNormalized: position,
+            arenaSize: Vector2(x: 400, y: 800)
+        )
+        return (point - Vector2(x: 200, y: 400)).magnitude
     }
 
     private func assertPointSpaceKnockback(

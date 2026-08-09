@@ -233,3 +233,29 @@ entries; correct an earlier statement with a new entry that cites it.
 - ChatGPT Final Review: **PENDING**
 - Phase status: **IMPLEMENTED / REVIEW PENDING**
 - Phase Gate: **Do not merge to `main` and do not begin Phase 4.**
+
+## 2026-08-10 — Phase 4 CPU / Stages / HEAT Implementation
+
+- Branch: `phase-4-cpu-stages`
+- Phase 4 Base / Phase 3 implementation:
+  `f1912a965232cb1b9af920f5071ca8fd5f6cb602`
+- Phase 3 ChatGPT Code Review receipt: **PASS**
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Phase 3 status: **NOT CLOSED**
+- Phase 4 Review Target: the commit containing this entry
+- Scope: shared CPU/player movement, CPU chase/escape/SHOCK, HEAT movement,
+  FLAT/BOWL/PILLAR, stage cycling, and connected TAG/SHOCK effects
+- Game rule and balance deviations: **None**
+- Codex Code Review: **PASS**
+- Generic iOS Simulator Build: **PASS — BUILD SUCCEEDED**
+- Tests: **PASS — 63 XCTest methods, 0 failures**
+- Simulator QA: **BLOCKED — restricted environment denied
+  CoreSimulatorService during install/launch**
+- Evidence: **NOT CAPTURED; no Visual PASS claimed**
+- Consecutive 5–10 match QA: **BLOCKED by the same Simulator restriction**
+- ChatGPT Review: **PENDING**
+- Phase 4 status: **IMPLEMENTED / REVIEW PENDING**
+- Continuity: **BLOCKED ON REVIEW**
+- Next Action: run Simulator QA externally, add the required Phase 4 evidence,
+  and request exact-SHA code / visual review.
+- Phase Gate: **Do not merge to `main` and do not begin Phase 5.**

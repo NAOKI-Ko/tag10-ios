@@ -20,22 +20,65 @@ public struct Vector2: Equatable, Sendable {
 
     public static let zero = Vector2()
 
-    var magnitude: Double {
+    public var magnitude: Double {
         hypot(x, y)
     }
 
-    var normalized: Vector2 {
+    public var normalized: Vector2 {
         let length = magnitude
         guard length > 0 else { return .zero }
         return Vector2(x: x / length, y: y / length)
     }
 
-    static func - (lhs: Vector2, rhs: Vector2) -> Vector2 {
+    public static func + (lhs: Vector2, rhs: Vector2) -> Vector2 {
+        Vector2(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
+    }
+
+    public static func - (lhs: Vector2, rhs: Vector2) -> Vector2 {
         Vector2(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
     }
 
-    static func * (lhs: Vector2, rhs: Double) -> Vector2 {
+    public static func * (lhs: Vector2, rhs: Double) -> Vector2 {
         Vector2(x: lhs.x * rhs, y: lhs.y * rhs)
+    }
+
+    public func dot(_ other: Vector2) -> Double {
+        x * other.x + y * other.y
+    }
+}
+
+public enum GameStage: String, CaseIterable, Equatable, Sendable {
+    case flat = "FLAT"
+    case bowl = "BOWL"
+    case pillar = "PILLAR"
+
+    public var next: GameStage {
+        switch self {
+        case .flat: return .bowl
+        case .bowl: return .pillar
+        case .pillar: return .flat
+        }
+    }
+
+    public static func stage(forMatchIndex index: Int) -> GameStage {
+        let stages = allCases
+        return stages[max(0, index) % stages.count]
+    }
+}
+
+public struct MatchSeriesState: Equatable, Sendable {
+    public private(set) var matchIndex: Int
+
+    public init(matchIndex: Int = 0) {
+        self.matchIndex = max(0, matchIndex)
+    }
+
+    public var currentStage: GameStage {
+        GameStage.stage(forMatchIndex: matchIndex)
+    }
+
+    public mutating func advance() {
+        matchIndex += 1
     }
 }
 

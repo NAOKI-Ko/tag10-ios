@@ -1,43 +1,33 @@
 # START HERE — TAG10
 
-This is the single Git entry point for a fresh ChatGPT, Codex, or other AI
-session. Restore the project from this repository instead of relying on prior
-ChatGPT/Codex conversations, account memory, or an earlier handoff message.
+This is the Git entry point for a fresh ChatGPT, Codex, or other AI session.
+Recover state from this repository, not prior conversations or account memory.
 
 ## Current Snapshot
 
 - Project: **TAG10**
 - Repository: `NAOKI-Ko/tag10-ios`
-- Branch: `phase-3-input`
-- Phase: **Phase 3 — Input**
+- Branch: `phase-4-cpu-stages`
+- Phase / Work Unit: **Phase 4 — CPU / Stages / HEAT**
 - Status: **IMPLEMENTED / REVIEW PENDING**
-- Work Unit: **Phase 3 — Input**
-- Latest Reviewed Implementation Commit:
+- Latest Reviewed Implementation:
   `b6ff62966387df9eebc1d322cf14d89133a51276`
-- Phase 3 Branch Baseline:
-  `292c31d581e5cddcf2270db1feb35cb8c0caf7b9`
-- Phase 3 Review Target Implementation Commit: the commit containing this
-  snapshot; resolve with `git log -1 --format=%H -- docs/START_HERE.md`
-- Previous Phase 3 Implementation Commit:
-  `e5825496083b9559784da174ce8406c093930fff`
-- ChatGPT Code Review: **FIX IMPLEMENTED / RE-REVIEW PENDING**
-- Original Review Decision: **CHANGES REQUESTED**
-- Codex Code Review: **PASS**
-- Simulator Visual QA: **PASS**
-- Device Motion QA: **PENDING HUMAN GATE**
-- ChatGPT Final Review: **PENDING**
+- Phase 4 Base / Phase 3 implementation:
+  `f1912a965232cb1b9af920f5071ca8fd5f6cb602`
+- Phase 4 Review Target: the commit containing this snapshot; resolve with
+  `git log -1 --format=%H -- docs/START_HERE.md`
+- Phase 3 ChatGPT Code Review: **PASS**
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Phase 3 status: **NOT CLOSED**
+- Phase 4 Codex Code Review: **PASS**
+- Phase 4 Simulator QA: **BLOCKED — CoreSimulatorService sandbox denial**
+- Phase 4 ChatGPT Review: **PENDING**
 - Continuity: **BLOCKED ON REVIEW**
-- Next Action: **ChatGPT exact-SHA Review Fix re-review and Visual Evidence
-  review.**
-- Phase Gate: **Phase 4 is PROHIBITED.**
-
-Phase 3 input implementation is complete on its dedicated branch but is not
-approved or closed. Do not merge to `main` and do not begin Phase 4 until an
-explicit review receipt or Work Unit authorizes the transition.
+- Next Action: **Run external Simulator QA, capture Phase 4 evidence, then
+  request exact-SHA code / visual review.**
+- Phase Gate: **Do not merge to main and do not begin Phase 5.**
 
 ## Cold Start Reading Order
-
-Read in this order before selecting or changing work:
 
 1. `docs/START_HERE.md`
 2. `docs/PROJECT_STATE.md`
@@ -51,61 +41,36 @@ Read in this order before selecting or changing work:
 10. `docs/REVIEW_LOG.md`
 11. Relevant source and tests for the explicitly authorized task
 
-For gameplay balance and behavior, `docs/GAME_RULES.md` is authoritative. The
-HTML prototype is the reference for feel, rendering ideas, CPU behavior, and
-existing flow. `docs/PROJECT_STATE.md` is authoritative for choosing the next
-work unit and applying the current phase gate.
+`docs/GAME_RULES.md` is authoritative for gameplay balance and behavior. The
+HTML prototype is the reference for feel, CPU behavior, stages, and flow.
 
 ## Recovery Procedure
 
-1. Confirm the checked-out branch, its upstream, and a clean worktree.
-2. Read `docs/PROJECT_STATE.md` before deciding what to do.
-3. Confirm the Latest Reviewed implementation, branch baseline, and Phase 3
-   Review Target exist in Git.
-4. Confirm the evidence paths and review statuses recorded in PROJECT_STATE.
-5. Work only on the explicit task authorized by PROJECT_STATE or the user.
-6. Keep `PROJECT_STATE.md`, `CODEX_REPORT.md`, and `REVIEW_LOG.md` synchronized
-   when implementation, verification, review, or the next action changes.
+1. Confirm branch, upstream, exact HEAD, and a clean worktree.
+2. Read `docs/PROJECT_STATE.md` before choosing work.
+3. Resolve the Phase 4 Review Target from this state commit.
+4. Confirm 63 XCTest methods pass and inspect Simulator/evidence status.
+5. Preserve the Phase 3 Device Motion human gate and Phase 3 not-closed state.
+6. Work only on an explicit task; keep state/report/review memory synchronized.
 
 ## Stop Conditions
 
-Stop without implementation and report the conflict if any of the following
-disagree:
+Stop and report if Notion, Git docs, source, tests, commit history, or explicit
+instructions disagree. Do not infer approval, manufacture visual evidence, or
+advance to Phase 5.
 
-- Notion's active Work Unit
-- `docs/PROJECT_STATE.md`
-- Git specifications and source-of-truth documents
-- Source code and tests
-- Review Target / Latest Reviewed commit history
-- Explicit user instructions
+## Phase 4 Verification Receipt
 
-Do not resolve a state or product contradiction by guessing. Do not advance to
-a later phase until `docs/PROJECT_STATE.md` or an explicit task authorizes it.
+- Generic iOS Simulator Build: **PASS**
+- Tests: **PASS — 63 XCTest methods, 0 failures**
+- CPU / HEAT / BOWL / PILLAR / cycling: **UNIT TESTED**
+- Simulator install, launch, five-to-ten-match QA: **BLOCKED by sandbox**
+- Phase 4 evidence: **NOT CAPTURED**
+- ChatGPT Review: **PENDING**
 
-## Phase 3 Verification Receipt
+## Phase 3 Carry-forward Gate
 
-- Scope: CoreMotion tilt, neutral calibration, player-only movement,
-  tap-to-SHOCK, DEBUG drag fallback, and motion-trail validation
-- Generic iOS Build: **PASS — BUILD SUCCEEDED**
-- Simulator Build / Launch: **PASS — iPhone 17 Pro / iOS 26.5 / portrait**
-- Review Fix: **point-space isotropic movement and Direct TAG / SHOCK
-  knockback geometry implemented; intro/finished SHOCK presentation blocked**
-- Tests: **PASS — 27 XCTest methods, 0 failures**
-- Simulator Visual QA: **PASS**
-- Evidence:
-  - `docs/evidence/phase-3/idle.png`
-  - `docs/evidence/phase-3/drag-movement.png`
-  - `docs/evidence/phase-3/shock.png`
+- Implementation: `f1912a965232cb1b9af920f5071ca8fd5f6cb602`
+- ChatGPT Code Review: **PASS**
 - Device Motion QA: **PENDING HUMAN GATE**
-- Explicitly not implemented: CPU AI/movement/SHOCK, BOWL, PILLAR, stage
-  cycling, HEAT speed application, haptics, sound, persistence, and Phase 4+
-
-## Phase 2B Reviewed Baseline
-
-- Status: **CLOSED / APPROVED**
-- Approved Implementation / Latest Reviewed Implementation:
-  `b6ff62966387df9eebc1d322cf14d89133a51276`
-- ChatGPT Final Visual Review: **PASS**
-
-The Phase 2B baseline remains the Latest Reviewed Implementation until ChatGPT
-approves the exact Phase 3 Review Target.
+- Phase 3: **NOT CLOSED**

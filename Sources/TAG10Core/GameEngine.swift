@@ -9,6 +9,8 @@ public struct GameEngine: Equatable, Sendable {
     public private(set) var tagProtectionRemaining: TimeInterval
     public private(set) var tagCount: Int
     public private(set) var arenaSize: Vector2
+    public private(set) var actorRadius: Double
+    public let stage: GameStage
 
     /// Point-space maximum movement speed derived from arena width, matching
     /// the HTML prototype's `MAXSPD = W * 0.98` relationship.
@@ -19,7 +21,9 @@ public struct GameEngine: Equatable, Sendable {
         playerPosition: Vector2 = .zero,
         cpuPosition: Vector2 = .zero,
         arenaSize: Vector2 = Vector2(x: 1, y: 1),
-        maximumMovementSpeed: Double = 1.0
+        maximumMovementSpeed: Double = 1.0,
+        actorRadius: Double = 0,
+        stage: GameStage = .flat
     ) {
         phase = .intro
         remainingTime = GameConfig.matchDuration
@@ -37,29 +41,38 @@ public struct GameEngine: Equatable, Sendable {
         tagCount = 0
         self.arenaSize = arenaSize
         self.maximumMovementSpeed = maximumMovementSpeed
+        self.actorRadius = max(0, actorRadius)
+        self.stage = stage
     }
 
     public static func randomMatch(
         playerPosition: Vector2 = .zero,
         cpuPosition: Vector2 = .zero,
         arenaSize: Vector2 = Vector2(x: 1, y: 1),
-        maximumMovementSpeed: Double = 1.0
+        maximumMovementSpeed: Double = 1.0,
+        actorRadius: Double = 0,
+        stage: GameStage = .flat
     ) -> GameEngine {
         GameEngine(
             playerStartsAsIt: Bool.random(),
             playerPosition: playerPosition,
             cpuPosition: cpuPosition,
             arenaSize: arenaSize,
-            maximumMovementSpeed: maximumMovementSpeed
+            maximumMovementSpeed: maximumMovementSpeed,
+            actorRadius: actorRadius,
+            stage: stage
         )
     }
 
     /// Receives renderer geometry as plain numeric values. Gameplay physics
     /// remains independent of SpriteKit while matching point-space behavior.
-    public mutating func configureArena(size: Vector2) {
+    public mutating func configureArena(size: Vector2, actorRadius: Double? = nil) {
         guard size.x > 0, size.y > 0 else { return }
         arenaSize = size
         maximumMovementSpeed = size.x * GameConfig.Input.maximumSpeedPerArenaWidth
+        if let actorRadius {
+            self.actorRadius = max(0, actorRadius)
+        }
     }
 
     public var isTimerPaused: Bool {
@@ -97,22 +110,42 @@ public struct GameEngine: Equatable, Sendable {
         }
     }
 
-    /// Applies player-only Phase 3 movement while preserving the engine as the
-    /// authoritative owner of position and velocity.
+    /// Applies the same point-space movement primitive to either actor.
+    public mutating func moveActor(
+        _ actorID: ActorID,
+        input: Vector2,
+        deltaTime: TimeInterval,
+        bounds: MovementBounds
+    ) {
+        guard phase == .playing, !actor(actorID).isStunned else { return }
+        let moved = ActorMovement.integrate(
+            actor: actor(actorID),
+            input: input,
+            deltaTime: deltaTime,
+            bounds: bounds,
+            arenaSize: arenaSize,
+            maximumSpeed: maximumMovementSpeed,
+            heatMultiplier: heatMultiplier,
+            stage: stage,
+            actorRadius: actorRadius
+        )
+        setActor(moved, for: actorID)
+    }
+
     public mutating func movePlayer(
         input: Vector2,
         deltaTime: TimeInterval,
         bounds: MovementBounds
     ) {
-        guard phase == .playing, !player.isStunned else { return }
-        player = PlayerMovement.integrate(
-            actor: player,
-            input: input,
-            deltaTime: deltaTime,
-            bounds: bounds,
-            arenaSize: arenaSize,
-            maximumSpeed: maximumMovementSpeed
-        )
+        moveActor(.player, input: input, deltaTime: deltaTime, bounds: bounds)
+    }
+
+    public mutating func moveCPU(
+        input: Vector2,
+        deltaTime: TimeInterval,
+        bounds: MovementBounds
+    ) {
+        moveActor(.cpu, input: input, deltaTime: deltaTime, bounds: bounds)
     }
 
     /// DEBUG drag uses this entry point instead of moving the SpriteKit node.

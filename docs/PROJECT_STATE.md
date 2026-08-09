@@ -1,80 +1,70 @@
 # PROJECT STATE — TAG10
 
-Last synchronized: 2026-08-09 (Asia/Tokyo)
+Last synchronized: 2026-08-10 (Asia/Tokyo)
 
 ## Identity
 
 - Project: **TAG10**
 - Repository: `NAOKI-Ko/tag10-ios`
-- Branch: `phase-3-input`
-- Phase: **Phase 3**
+- Branch: `phase-4-cpu-stages`
+- Phase: **Phase 4**
 - Status: **IMPLEMENTED / REVIEW PENDING**
-- Work Unit: **Input**
+- Work Unit: **CPU / Stages / HEAT**
 - Continuity: **BLOCKED ON REVIEW**
 
 ## Review State
 
 - Latest Reviewed Implementation Commit:
   `b6ff62966387df9eebc1d322cf14d89133a51276`
-- Phase 3 Branch Baseline:
-  `292c31d581e5cddcf2270db1feb35cb8c0caf7b9`
-- Phase 3 Review Target Implementation Commit: the commit containing this file;
-  resolve with `git log -1 --format=%H -- docs/PROJECT_STATE.md`
-- Previous Phase 3 Implementation Commit:
-  `e5825496083b9559784da174ce8406c093930fff`
-- ChatGPT Code Review: **FIX IMPLEMENTED / RE-REVIEW PENDING**
-- Original Review Decision: **CHANGES REQUESTED**
-- Codex Code Review: **PASS**
-- Simulator Visual QA: **PASS**
-- Device Motion QA: **PENDING HUMAN GATE**
-- ChatGPT Final Review: **PENDING**
+- Phase 3 implementation baseline / Phase 4 branch base:
+  `f1912a965232cb1b9af920f5071ca8fd5f6cb602`
+- Phase 3 ChatGPT Code Review: **PASS**
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Phase 3 status: **NOT CLOSED**
+- Phase 4 Review Target Implementation Commit: the commit containing this
+  file; resolve with `git log -1 --format=%H -- docs/PROJECT_STATE.md`
+- Phase 4 Codex Code Review: **PASS**
+- Phase 4 Simulator QA: **BLOCKED — sandbox denied CoreSimulatorService**
+- Phase 4 ChatGPT Review: **PENDING**
 - Final Decision: **PENDING**
 
-## Implementation Snapshot
+## Phase 4 Implementation Snapshot
 
-- CoreMotion `deviceMotion` adapter: **IMPLEMENTED**
-- Neutral-angle calibration: **IMPLEMENTED — first valid attitude sample**
-- Dead-zone and clamped tilt mapping: **IMPLEMENTED / UNIT TESTED**
-- Player-only point-space isotropic movement: **IMPLEMENTED / UNIT TESTED**
-- Rectangular-arena delta-time independence and diagonal point-speed cap:
+- Shared PLAYER / CPU point-space movement primitive: **IMPLEMENTED**
+- CPU chase, prediction, escape, wall avoidance, and rating-based jitter:
   **IMPLEMENTED / UNIT TESTED**
-- Authoritative GameEngine position and arena bounds: **IMPLEMENTED / UNIT TESTED**
-- Direct TAG / SHOCK point-space knockback geometry: **IMPLEMENTED / UNIT TESTED**
-- DEBUG drag fallback: **IMPLEMENTED / SIMULATOR PASS**
-- Tap-to-SHOCK using GameEngine: **IMPLEMENTED / SIMULATOR PASS**
-- Intro/finished SHOCK presentation guard: **IMPLEMENTED**
-- Shock outcomes (`unavailable`, `missed`, `transferred`): **UNIT TESTED**
-- Motion trail on real player movement: **SIMULATOR VISUAL PASS**
-- CPU movement / AI / Shock AI: **NOT IMPLEMENTED — OUT OF SCOPE**
-- HEAT movement-speed application: **NOT IMPLEMENTED — OUT OF SCOPE**
+- CPU SHOCK eligibility and authoritative `GameEngine.useShock` flow:
+  **IMPLEMENTED / UNIT TESTED**
+- HEAT speed multiplier for PLAYER and CPU, composed with IT/stage caps:
+  **IMPLEMENTED / UNIT TESTED**
+- Explicit FLAT / BOWL / PILLAR stage model: **IMPLEMENTED / UNIT TESTED**
+- BOWL center force and 1.25 speed cap: **IMPLEMENTED / UNIT TESTED**
+- PILLAR point-space collision and rendering: **IMPLEMENTED / UNIT TESTED**
+- FLAT → BOWL → PILLAR match cycling: **IMPLEMENTED / UNIT TESTED**
+- Minimal result-tap replay flow: **IMPLEMENTED**
+- Direct TAG / PLAYER SHOCK / CPU SHOCK visual effects: **CONNECTED**
 
 ## Verification Snapshot
 
-- Generic iOS Build: **PASS — BUILD SUCCEEDED**
-- Simulator Build: **PASS — BUILD SUCCEEDED**
-- Tests: **PASS — 27 XCTest methods, 0 failures**
-- Simulator Launch: **PASS — iPhone 17 Pro / iOS 26.5 / portrait**
-- Simulator motion availability fallback: **PASS — no crash, DEBUG drag enabled**
-- Evidence:
-  - `docs/evidence/phase-3/idle.png`
-  - `docs/evidence/phase-3/drag-movement.png`
-  - `docs/evidence/phase-3/shock.png`
-- Device-only QA:
-  - physical-device CoreMotion availability and permission/error path
-  - neutral hold comfort and recalibration behavior
-  - tilt axis direction, dead-zone feel, clamp feel, and input latency
-  - simultaneous tilt plus tap-to-SHOCK
+- Generic iOS Simulator Build: **PASS — BUILD SUCCEEDED**
+- Unit Tests: **PASS — 63 XCTest methods, 0 failures**
+- Simulator install / launch / visual QA: **BLOCKED** because the restricted
+  execution environment refused CoreSimulatorService connections. Device
+  discovery alone succeeded and found the booted iPhone 17 Pro / iOS 26.5.
+- Phase 4 evidence: **NOT CAPTURED — do not treat as Visual PASS**
+- Consecutive 5–10 match QA: **NOT RUN — same Simulator blocker**
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
 
 ## Next Action
 
-**ChatGPT exact-SHA re-review of the Phase 3 Review Fix, followed by
-physical-device Motion QA.**
+Run Phase 4 Simulator QA outside the restricted sandbox, capture the required
+evidence under `docs/evidence/phase-4/`, then request ChatGPT exact-SHA code and
+visual review.
 
-Do not advance Latest Reviewed Implementation until the Phase 3 Review Target
-is approved. Do not merge to `main`. **Phase 4 is PROHIBITED.**
+Do not merge to `main`. Do not begin Phase 5.
 
 ## State Conflict Rule
 
 Before choosing work, read `docs/START_HERE.md` and this file. If Notion, Git
 docs, source, tests, commit history, or the explicit task contradict this state,
-stop without making implementation changes and report the conflict for review.
+stop without implementation and report the conflict for review.

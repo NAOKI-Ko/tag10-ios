@@ -781,3 +781,84 @@ the HTML visual reference.
 
 Review the Phase 2A Visual QA evidence and safe-area correction. Begin Phase 2B
 only after explicit approval; do not proceed to Phase 2B or Phase 3 implicitly.
+
+## Phase 4 — CPU / Stages / HEAT (2026-08-10)
+
+### Objective
+
+Port the HTML prototype's CPU gameplay, HEAT movement, BOWL/PILLAR stage
+physics, and per-match stage cycling without starting Phase 5 or merging main.
+
+### Implementation
+
+- Generalized Phase 3 movement into one pure point-space primitive used by
+  PLAYER and CPU; normalized `GameEngine` state remains authoritative.
+- Added deterministic CPU chase/prediction, runner escape, wall avoidance,
+  center bias, rating-based lead/jitter, and magnitude clamping.
+- Added CPU SHOCK eligibility at rating 1120 and `SHOCK_R × 0.9`; transfer
+  remains exclusively owned by `GameEngine.useShock`.
+- Applied HEAT to both actors as base × IT × HEAT × stage speed cap.
+- Added explicit FLAT/BOWL/PILLAR models, point-space BOWL force (3.2), BOWL
+  cap (1.25), and pure PILLAR collision (2.6 actor radii plus actor radius).
+- Added FLAT → BOWL → PILLAR cycling and minimal result-tap replay.
+- Connected actual Direct TAG and PLAYER/CPU SHOCK changes to existing effects.
+
+### Changed Files
+
+- `Sources/TAG10Core/GameModels.swift`
+- `Sources/TAG10Core/GameConfig.swift`
+- `Sources/TAG10Core/PlayerInput.swift`
+- `Sources/TAG10Core/GameEngine.swift`
+- `Sources/TAG10App/GameScene.swift`
+- `Sources/TAG10App/GameHUDNode.swift`
+- `Tests/TAG10CoreTests/GameCoreTests.swift`
+- `docs/PROJECT_STATE.md`
+- `docs/START_HERE.md`
+- `docs/REVIEW_LOG.md`
+- `docs/CODEX_REPORT.md`
+
+### Build / Tests
+
+- Generic iOS Simulator build: **PASS — BUILD SUCCEEDED**
+- XCTest bundle build (macOS host): **PASS — TEST BUILD SUCCEEDED**
+- Direct XCTest execution: **PASS — 63 tests, 0 failures**
+- Standard Simulator runner: **BLOCKED** because this sandbox refused
+  CoreSimulatorService access; direct execution used the generated test bundle.
+
+### Visual Evidence / Simulator QA
+
+- `xcrun simctl list devices available` found the booted iPhone 17 Pro / iOS
+  26.5.
+- Install/launch failed before app execution because CoreSimulatorService was
+  denied by the execution sandbox.
+- Required `docs/evidence/phase-4/*.png` files were therefore **not captured**.
+- FLAT/BOWL/PILLAR, real TAG/SHOCK visuals, HEAT observation, and 5–10-match
+  continuity are **NOT VISUAL PASS** and remain blocked pending an unrestricted
+  Simulator run.
+
+### Review / Continuity
+
+- Phase 3 ChatGPT Code Review: **PASS**
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Phase 3 status: **NOT CLOSED**
+- Phase 4 Codex Code Review: **PASS**
+- Phase 4 status: **IMPLEMENTED / REVIEW PENDING**
+- Phase 4 ChatGPT Review: **PENDING**
+- Phase 5 started: **No**
+- Main merged: **No**
+
+### Deviations / Unresolved / Decisions Needed
+
+- No gameplay/balance constant or documented rule was changed.
+- At the exact PILLAR center, where the HTML direction is mathematically
+  undefined, collision uses a deterministic outward normal so the explicit
+  requirement that actors cannot remain inside is upheld.
+- No new product decision was made.
+- Unresolved: external Simulator visual QA/evidence and Phase 3 physical-device
+  Motion QA.
+
+### Next Suggested Step
+
+Run the Phase 4 Simulator checklist outside the restricted sandbox, capture the
+required evidence, and request exact-SHA ChatGPT review. Do not merge main or
+begin Phase 5.

@@ -1,7 +1,7 @@
 import SpriteKit
 import TAG10Core
 
-/// SpriteKit presentation for the FLAT-stage gameplay shell and visual polish.
+/// SpriteKit presentation for gameplay, stages, and transient effects.
 /// `GameEngine` remains the sole source of gameplay time, state, and results.
 final class GameScene: SKScene {
     private enum VisualConfig {
@@ -36,8 +36,11 @@ final class GameScene: SKScene {
 
     private var engine = GameEngine.randomMatch(
         playerPosition: Vector2(x: 0.30, y: 0.28),
-        cpuPosition: Vector2(x: 0.70, y: 0.75)
+        cpuPosition: Vector2(x: 0.70, y: 0.75),
+        stage: .flat
     )
+    private var series = MatchSeriesState()
+    private var progress = PlayerProgress()
 
     private let motionInputController = MotionInputController()
     private let arenaLayer = SKNode()
@@ -60,6 +63,7 @@ final class GameScene: SKScene {
     private var visualTime: TimeInterval = 0
     private var didPresentFight = false
     private var didPresentResult = false
+    private var didRecordResult = false
     private var isConfigured = false
     private var previousVisualSnapshot: VisualSnapshot?
     private var previousCountdownNumber: Int?
@@ -121,8 +125,12 @@ final class GameScene: SKScene {
             }
         case .playing:
             engine.advance(by: deltaTime)
-            updatePlayerMovement(deltaTime: deltaTime)
-            attemptDirectTagIfNeeded()
+            if engine.phase == .playing {
+                updatePlayerMovement(deltaTime: deltaTime)
+                updateCPUMovement(deltaTime: deltaTime)
+                attemptCPUShockIfNeeded()
+                attemptDirectTagIfNeeded()
+            }
         case .finished:
             presentResultIfNeeded()
         }
@@ -223,9 +231,12 @@ final class GameScene: SKScene {
     }
 
     private func layoutScene() {
-        engine.configureArena(size: arenaSizeVector)
+        engine.configureArena(
+            size: arenaSizeVector,
+            actorRadius: Double(ActorNode.visualRadius)
+        )
         arenaLayer.removeAllChildren()
-        drawFlatArena(in: arenaFrame)
+        drawArena(in: arenaFrame)
 
         hudNode.layout(width: size.width, top: size.height)
         fightLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.54)
@@ -243,7 +254,7 @@ final class GameScene: SKScene {
         positionActors()
     }
 
-    private func drawFlatArena(in frame: CGRect) {
+    private func drawArena(in frame: CGRect) {
         let floor = SKShapeNode(rect: frame, cornerRadius: 4)
         floor.fillColor = SKColor(red: 11 / 255, green: 15 / 255, blue: 20 / 255, alpha: 1)
         floor.strokeColor = SKColor(white: 1, alpha: 0.13)
@@ -251,43 +262,95 @@ final class GameScene: SKScene {
         floor.zPosition = -20
         arenaLayer.addChild(floor)
 
-        let gridSpacing = max(38, frame.width / 9)
-        var x = frame.minX + gridSpacing
-        while x < frame.maxX {
-            let line = SKShapeNode()
-            let path = CGMutablePath()
-            path.move(to: CGPoint(x: x, y: frame.minY))
-            path.addLine(to: CGPoint(x: x, y: frame.maxY))
-            line.path = path
-            line.strokeColor = SKColor(white: 1, alpha: 0.045)
-            line.lineWidth = 1
-            line.zPosition = -19
-            arenaLayer.addChild(line)
-            x += gridSpacing
+        if engine.stage == .bowl {
+            drawBowlContours(in: frame)
+        } else {
+            drawGrid(in: frame)
         }
-
-        var y = frame.minY + gridSpacing
-        while y < frame.maxY {
-            let line = SKShapeNode()
-            let path = CGMutablePath()
-            path.move(to: CGPoint(x: frame.minX, y: y))
-            path.addLine(to: CGPoint(x: frame.maxX, y: y))
-            line.path = path
-            line.strokeColor = SKColor(white: 1, alpha: 0.045)
-            line.lineWidth = 1
-            line.zPosition = -19
-            arenaLayer.addChild(line)
-            y += gridSpacing
+        if engine.stage == .pillar {
+            drawPillar(in: frame)
         }
 
         let stageLabel = SKLabelNode(fontNamed: "Menlo-Bold")
-        stageLabel.text = "STAGE 1 — FLAT"
+        stageLabel.text = "STAGE \(series.matchIndex + 1) — \(engine.stage.rawValue)"
         stageLabel.fontSize = 11
         stageLabel.fontColor = SKColor(white: 0.48, alpha: 1)
         stageLabel.horizontalAlignmentMode = .left
         stageLabel.position = CGPoint(x: frame.minX + 10, y: frame.maxY - 22)
         stageLabel.zPosition = -18
         arenaLayer.addChild(stageLabel)
+    }
+
+    private func drawGrid(in frame: CGRect) {
+        let gridSpacing = max(38, frame.width / 9)
+        var x = frame.minX + gridSpacing
+        while x < frame.maxX {
+            addArenaLine(from: CGPoint(x: x, y: frame.minY), to: CGPoint(x: x, y: frame.maxY))
+            x += gridSpacing
+        }
+        var y = frame.minY + gridSpacing
+        while y < frame.maxY {
+            addArenaLine(from: CGPoint(x: frame.minX, y: y), to: CGPoint(x: frame.maxX, y: y))
+            y += gridSpacing
+        }
+    }
+
+    private func addArenaLine(from start: CGPoint, to end: CGPoint) {
+        let line = SKShapeNode()
+        let path = CGMutablePath()
+        path.move(to: start)
+        path.addLine(to: end)
+        line.path = path
+        line.strokeColor = SKColor(white: 1, alpha: 0.045)
+        line.lineWidth = 1
+        line.zPosition = -19
+        arenaLayer.addChild(line)
+    }
+
+    private func drawBowlContours(in frame: CGRect) {
+        let glow = SKShapeNode(ellipseIn: CGRect(
+            x: frame.midX - frame.width * 0.23,
+            y: frame.midY - frame.height * 0.18,
+            width: frame.width * 0.46,
+            height: frame.height * 0.36
+        ))
+        glow.fillColor = SKColor(red: 0.02, green: 0.04, blue: 0.08, alpha: 0.62)
+        glow.strokeColor = .clear
+        glow.zPosition = -19
+        arenaLayer.addChild(glow)
+
+        for index in 1...6 {
+            let fraction = CGFloat(index) / 6
+            let contour = SKShapeNode(ellipseIn: CGRect(
+                x: frame.midX - frame.width * 0.48 * fraction,
+                y: frame.midY - frame.height * 0.45 * fraction,
+                width: frame.width * 0.96 * fraction,
+                height: frame.height * 0.90 * fraction
+            ))
+            contour.fillColor = .clear
+            contour.strokeColor = SKColor(red: 0.47, green: 0.70, blue: 1, alpha: 0.08)
+            contour.lineWidth = 1
+            contour.zPosition = -18
+            arenaLayer.addChild(contour)
+        }
+    }
+
+    private func drawPillar(in frame: CGRect) {
+        let radius = ActorNode.visualRadius * CGFloat(GameConfig.Stage.pillarRadiusActorRadii)
+        let shadow = SKShapeNode(ellipseOf: CGSize(width: radius * 2.1, height: radius * 1.4))
+        shadow.position = CGPoint(x: frame.midX, y: frame.midY - radius * 0.25)
+        shadow.fillColor = SKColor(white: 0, alpha: 0.35)
+        shadow.strokeColor = .clear
+        shadow.zPosition = -8
+        arenaLayer.addChild(shadow)
+
+        let pillar = SKShapeNode(circleOfRadius: radius)
+        pillar.position = CGPoint(x: frame.midX, y: frame.midY)
+        pillar.fillColor = SKColor(red: 0.17, green: 0.21, blue: 0.24, alpha: 1)
+        pillar.strokeColor = SKColor(white: 1, alpha: 0.16)
+        pillar.lineWidth = 2
+        pillar.zPosition = 6
+        arenaLayer.addChild(pillar)
     }
 
     private func renderEngineState() {
@@ -332,6 +395,39 @@ final class GameScene: SKScene {
             input: motionInputController.input,
             deltaTime: deltaTime,
             bounds: movementBounds
+        )
+    }
+
+    private func updateCPUMovement(deltaTime: TimeInterval) {
+        let input = CPUController.input(
+            cpu: engine.cpu,
+            player: engine.player,
+            arenaSize: arenaSizeVector,
+            actorRadius: Double(ActorNode.visualRadius),
+            rating: progress.rating,
+            jitterSample: Vector2(
+                x: Double.random(in: -1...1),
+                y: Double.random(in: -1...1)
+            )
+        )
+        engine.moveCPU(input: input, deltaTime: deltaTime, bounds: movementBounds)
+    }
+
+    private func attemptCPUShockIfNeeded() {
+        guard engine.phase == .playing,
+              CPUController.shouldUseShock(
+                cpu: engine.cpu,
+                player: engine.player,
+                rating: progress.rating,
+                arenaSize: arenaSizeVector,
+                actorRadius: Double(ActorNode.visualRadius)
+              ) else { return }
+
+        let outcome = engine.useShock(by: .cpu, targetIsInRange: true)
+        effectsLayer.emitStatus(
+            outcome == .transferred ? "CPU SHOCK TAG!" : "CPU SHOCK",
+            at: CGPoint(x: arenaFrame.midX, y: arenaFrame.minY + 34),
+            color: outcome == .transferred ? .tag10Gold : .tag10Orange
         )
     }
 
@@ -434,6 +530,10 @@ final class GameScene: SKScene {
             return
         }
 #endif
+        if case .finished = engine.phase {
+            startNextMatch()
+            return
+        }
         attemptPlayerShock()
     }
 
@@ -473,6 +573,8 @@ final class GameScene: SKScene {
     }
 
     private func presentIntroEntrance() {
+        fightLabel.isHidden = false
+        introLabel.isHidden = false
         fightLabel.alpha = 0
         fightLabel.setScale(0.62)
         fightLabel.run(
@@ -495,6 +597,10 @@ final class GameScene: SKScene {
     private func presentResultIfNeeded() {
         guard !didPresentResult, case let .finished(result) = engine.phase else { return }
         didPresentResult = true
+        if !didRecordResult {
+            progress.record(result)
+            didRecordResult = true
+        }
 
         resultShade.isHidden = false
         resultAccent.isHidden = false
@@ -555,6 +661,35 @@ final class GameScene: SKScene {
             color: result == .win ? .tag10Mint : .tag10Red,
             count: 28
         )
+    }
+
+    private func startNextMatch() {
+        series.advance()
+        engine = GameEngine.randomMatch(
+            playerPosition: Vector2(x: 0.30, y: 0.28),
+            cpuPosition: Vector2(x: 0.70, y: 0.75),
+            stage: series.currentStage
+        )
+        engine.configureArena(size: arenaSizeVector, actorRadius: Double(ActorNode.visualRadius))
+        introElapsed = 0
+        didPresentFight = false
+        didPresentResult = false
+        didRecordResult = false
+        previousCountdownNumber = nil
+        effectsLayer.removeAllChildren()
+        [fightLabel, introLabel, resultShade, resultAccent, resultLabel, resultDetailLabel].forEach {
+            $0.removeAllActions()
+        }
+        resultShade.isHidden = true
+        resultAccent.isHidden = true
+        resultLabel.isHidden = true
+        resultDetailLabel.isHidden = true
+        countdownHalo.isHidden = true
+        countdownLabel.isHidden = true
+        layoutScene()
+        renderEngineState()
+        previousVisualSnapshot = VisualSnapshot(engine: engine)
+        presentIntroEntrance()
     }
 
     private func presentVisualStateChanges() {

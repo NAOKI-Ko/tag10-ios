@@ -103,7 +103,7 @@ final class GameHUDNode: SKNode {
         cpuShockLabel.text = shockText(name: "CPU", actor: engine.cpu)
         playerShockLabel.fontColor = shockColor(actor: engine.player)
         cpuShockLabel.fontColor = shockColor(actor: engine.cpu)
-        pauseLabel.text = engine.isTimerPaused ? "TIMER PAUSED • STUN" : phaseText(engine.phase)
+        pauseLabel.text = engine.isTimerPaused ? "TIMER PAUSED • STUN" : phaseText(engine)
         pauseLabel.alpha = engine.isTimerPaused ? 1 : 0.62
     }
 
@@ -130,12 +130,12 @@ final class GameHUDNode: SKNode {
         return .tag10Gold
     }
 
-    private func phaseText(_ phase: MatchPhase) -> String {
-        switch phase {
+    private func phaseText(_ engine: GameEngine) -> String {
+        switch engine.phase {
         case .intro:
             return "FIGHT"
         case .playing:
-            return "PLAYING • FLAT"
+            return "PLAYING • \(engine.stage.rawValue)"
         case .finished:
             return "MATCH COMPLETE"
         }
