@@ -7,44 +7,44 @@ Last synchronized: 2026-08-09 (Asia/Tokyo)
 - Project: **TAG10**
 - Repository: `NAOKI-Ko/tag10-ios`
 - Branch: `main`
-- Phase: **Phase 2A**
-- Status: **CLOSED / APPROVED**
-- Work Unit: **Phase 2A Final Review Sync**
+- Phase: **Phase 2B**
+- Status: **IMPLEMENTATION_AUTHORIZED_AFTER_HANDOFF_SYNC**
+- Work Unit: **Visual Polish**
 - Continuity: **READY**
 
 ## Review State
 
-- Review Target Implementation Commit:
-  `26dfdb29aeb9854631d925d594ac7e5aecf73022`
 - Latest Reviewed Implementation Commit:
   `26dfdb29aeb9854631d925d594ac7e5aecf73022`
-- Reviewed State Snapshot:
-  `6bfc6529b42259d1dc9cf845f55f3396c6e04ffa`
-- Code Review: **PASS**
-- Codex Visual QA: **PASS**
-- ChatGPT Visual Review: **PASS**
-- Final Decision: **APPROVE**
-- Review Sync Commit: the commit containing this file; resolve its exact SHA
+- Baseline Review Sync:
+  `eba4f8e8b39aa03616ebeb5fe9334701cab0c23e`
+- Phase 2A status: **CLOSED / APPROVED**
+- Phase 2B Review Target: **Not created**
+- Phase 2B Code Review: **PENDING**
+- Phase 2B Codex Visual QA: **PENDING**
+- Phase 2B ChatGPT Visual Review: **PENDING**
+- Handoff Sync Commit: the commit containing this file; resolve its exact SHA
   with `git log -1 --format=%H -- docs/PROJECT_STATE.md`
 
 ## Verification Snapshot
 
-- Implementation code changed by this Work Unit: **No**
-- Build/Test rerun: **Not required — docs-only Review Sync**
-- Approved Phase 2A iOS Build: **PASS — BUILD SUCCEEDED**
-- Approved tests: **PASS — 13 XCTest methods, 0 failures**
-- Approved evidence:
+- Implementation code changed by this Handoff Sync: **No**
+- Build/Test rerun: **Not required — docs-only Handoff Sync**
+- Baseline Phase 2A iOS Build: **PASS — BUILD SUCCEEDED**
+- Baseline tests: **PASS — 13 XCTest methods, 0 failures**
+- Baseline evidence:
   - `docs/evidence/phase-2a/intro.png`
   - `docs/evidence/phase-2a/playing.png`
   - `docs/evidence/phase-2a/result.png`
 
 ## Next Action
 
-**Await explicit Phase 2B Work Unit from ChatGPT / Notion.**
+**Implement only Phase 2B — Visual Polish after the Handoff Sync commit is
+created, pushed, and verified.**
 
-Phase 2B has not started. Do not start it automatically. A new explicit Work
-Unit must define its scope, acceptance criteria, and do-not-change constraints
-before any Phase 2B implementation begins.
+The authorized scope is visual presentation only. Preserve TAG10Core,
+GameEngine, GameConfig, gameplay rules, balance, Phase 2A safe-area layout, and
+the lack of artificial movement. **Phase 3 is PROHIBITED.**
 
 ## State Conflict Rule
 

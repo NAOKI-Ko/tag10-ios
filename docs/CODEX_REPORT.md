@@ -1,6 +1,22 @@
-# CODEX REPORT — Phase 2A
+# CODEX REPORT — TAG10
 
-## Objective
+## Phase 2B Handoff Sync — 2026-08-09
+
+- Current Phase: **Phase 2B**
+- Work Unit: **Visual Polish**
+- Status: **IMPLEMENTATION_AUTHORIZED_AFTER_HANDOFF_SYNC**
+- Latest Reviewed Implementation:
+  `26dfdb29aeb9854631d925d594ac7e5aecf73022`
+- Baseline Review Sync:
+  `eba4f8e8b39aa03616ebeb5fe9334701cab0c23e`
+- Phase 2B Review Target: **Not created**
+- Implementation code changed by this Handoff Sync: **No**
+- Build/Test rerun: **Not required — docs-only Handoff Sync**
+- Next Action: implement only Phase 2B visual presentation after this commit is
+  pushed and its state is verified.
+- Phase Gate: **Phase 3 is PROHIBITED.**
+
+## Phase 2A Objective
 
 Implement only **Phase 2A — Visual gameplay shell** for the native TAG10 iOS
 app. Connect SpriteKit presentation to the existing rendering-independent

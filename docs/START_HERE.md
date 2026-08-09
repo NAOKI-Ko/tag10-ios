@@ -9,25 +9,25 @@ ChatGPT/Codex conversations, account memory, or an earlier handoff message.
 - Project: **TAG10**
 - Repository: `NAOKI-Ko/tag10-ios`
 - Branch: `main`
-- Phase: **Phase 2A — CLOSED / APPROVED**
-- Work Unit: **Phase 2A Final Review Sync**
-- Review Target Implementation Commit:
-  `26dfdb29aeb9854631d925d594ac7e5aecf73022`
+- Phase: **Phase 2B — Visual Polish**
+- Status: **IMPLEMENTATION_AUTHORIZED_AFTER_HANDOFF_SYNC**
+- Work Unit: **Visual Polish**
 - Latest Reviewed Implementation Commit:
   `26dfdb29aeb9854631d925d594ac7e5aecf73022`
-- Reviewed State Snapshot:
-  `6bfc6529b42259d1dc9cf845f55f3396c6e04ffa`
-- Code Review: **PASS**
-- Codex Visual QA: **PASS**
-- ChatGPT Visual Review: **PASS**
-- Final Decision: **APPROVE**
+- Baseline Review Sync:
+  `eba4f8e8b39aa03616ebeb5fe9334701cab0c23e`
+- Phase 2B Review Target: **Not created**
+- Phase 2B Code Review: **PENDING**
+- Phase 2B Codex Visual QA: **PENDING**
+- Phase 2B ChatGPT Visual Review: **PENDING**
 - Continuity: **READY**
-- Review Sync: **completed by this commit**
-- Next Action: **Await explicit Phase 2B Work Unit from ChatGPT / Notion.**
-- Phase Gate: **Do not start Phase 2B automatically.**
+- Handoff Sync: **completed by this commit**
+- Next Action: **Implement only Phase 2B Visual Polish.**
+- Phase Gate: **Phase 3 is PROHIBITED.**
 
-The Phase 2A implementation at exact SHA `26dfdb29...` is formally approved
-and closed. Phase 2B has not started and requires a new explicit Work Unit.
+The Phase 2A implementation at exact SHA `26dfdb29...` remains the latest
+reviewed baseline. The explicit Phase 2B Work Unit authorizes visual polish only
+after this Handoff Sync is committed, pushed, and verified.
 
 ## Cold Start Reading Order
 
@@ -54,8 +54,8 @@ work unit and applying the current phase gate.
 
 1. Confirm local `main`, `origin/main`, and a clean worktree.
 2. Read `docs/PROJECT_STATE.md` before deciding what to do.
-3. Confirm the Latest Reviewed implementation and reviewed State Snapshot exist
-   in Git.
+3. Confirm the Latest Reviewed implementation and Baseline Review Sync exist in
+   Git.
 4. Confirm the evidence paths and review statuses recorded in PROJECT_STATE.
 5. Work only on the explicit task authorized by PROJECT_STATE or the user.
 6. Keep `PROJECT_STATE.md`, `CODEX_REPORT.md`, and `REVIEW_LOG.md` synchronized
@@ -76,7 +76,20 @@ disagree:
 Do not resolve a state or product contradiction by guessing. Do not advance to
 a later phase until `docs/PROJECT_STATE.md` or an explicit task authorizes it.
 
-## Phase 2A Final Review Receipt
+## Phase 2B Authorization
+
+- Current Phase: **Phase 2B**
+- Work Unit: **Visual Polish**
+- Status: **IMPLEMENTATION_AUTHORIZED_AFTER_HANDOFF_SYNC**
+- Latest Reviewed Implementation:
+  `26dfdb29aeb9854631d925d594ac7e5aecf73022`
+- Baseline Review Sync:
+  `eba4f8e8b39aa03616ebeb5fe9334701cab0c23e`
+- Phase 2B Review Target: **Not created**
+- Allowed implementation: visual presentation layer only
+- Forbidden: gameplay/input/CPU changes and **all Phase 3 work**
+
+## Phase 2A Baseline Receipt
 
 - Decision: **APPROVE**
 - Approved Implementation:
@@ -91,5 +104,5 @@ a later phase until `docs/PROJECT_STATE.md` or an explicit task authorizes it.
   - `docs/evidence/phase-2a/playing.png`
   - `docs/evidence/phase-2a/result.png`
 
-The next permitted action is to receive and review a new explicit Phase 2B Work
-Unit. This receipt does not itself authorize Phase 2B implementation.
+This Phase 2A receipt remains the approved baseline and does not authorize any
+gameplay-rule change during Phase 2B.
