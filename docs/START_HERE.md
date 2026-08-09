@@ -10,27 +10,28 @@ ChatGPT/Codex conversations, account memory, or an earlier handoff message.
 - Repository: `NAOKI-Ko/tag10-ios`
 - Branch: `main`
 - Phase: **Phase 2B — Visual Polish**
-- Status: **AWAITING_CHATGPT_REVIEW**
-- Work Unit: **Visual Polish**
+- Status: **CLOSED / APPROVED**
+- Work Unit: **Phase 2B Final Review Sync**
 - Latest Reviewed Implementation Commit:
-  `26dfdb29aeb9854631d925d594ac7e5aecf73022`
-- Baseline Review Sync:
-  `eba4f8e8b39aa03616ebeb5fe9334701cab0c23e`
-- Phase 2B Handoff Sync:
-  `54bd99d750ffcd47f2a26a2af9ade678591312c6`
+  `b6ff62966387df9eebc1d322cf14d89133a51276`
 - Phase 2B Review Target Implementation Commit:
   `b6ff62966387df9eebc1d322cf14d89133a51276`
-- Phase 2B Code Review: **PENDING**
+- Reviewed Phase 2B State Snapshot:
+  `59b75cbc3af84148721bc58e5870d4c6ba9f8fed`
+- Phase 2B Handoff Sync:
+  `54bd99d750ffcd47f2a26a2af9ade678591312c6`
+- Phase 2B Code / State Review: **PASS**
 - Phase 2B Codex Visual QA: **PASS**
-- Phase 2B ChatGPT Visual Review: **PENDING**
+- Phase 2B ChatGPT Final Visual Review: **PASS**
+- Final Decision: **APPROVE**
 - Continuity: **READY**
-- Next Action: **ChatGPT exact-SHA / Visual Evidence review.**
-- Phase Gate: **Phase 3 is PROHIBITED.**
+- Review Sync: **completed by the commit containing this snapshot**
+- Next Action: **Await explicit Phase 3 Work Unit from ChatGPT / Notion.**
+- Phase Gate: **Do not start Phase 3 automatically.**
 
-The Phase 2A implementation at exact SHA `26dfdb29...` remains the latest
-reviewed baseline until ChatGPT approves the Phase 2B Review Target. Phase 2B
-implementation and Codex Visual QA are complete; no further implementation is
-authorized by this state.
+Phase 2B is formally closed. No implementation work is currently authorized;
+the repository must remain at this approved state until an explicit Phase 3
+Work Unit is provided by ChatGPT / Notion.
 
 ## Cold Start Reading Order
 
@@ -57,8 +58,8 @@ work unit and applying the current phase gate.
 
 1. Confirm local `main`, `origin/main`, and a clean worktree.
 2. Read `docs/PROJECT_STATE.md` before deciding what to do.
-3. Confirm the Latest Reviewed implementation and Baseline Review Sync exist in
-   Git.
+3. Confirm the Latest Reviewed implementation and referenced review commits
+   exist in Git.
 4. Confirm the evidence paths and review statuses recorded in PROJECT_STATE.
 5. Work only on the explicit task authorized by PROJECT_STATE or the user.
 6. Keep `PROJECT_STATE.md`, `CODEX_REPORT.md`, and `REVIEW_LOG.md` synchronized
@@ -79,42 +80,25 @@ disagree:
 Do not resolve a state or product contradiction by guessing. Do not advance to
 a later phase until `docs/PROJECT_STATE.md` or an explicit task authorizes it.
 
-## Phase 2B Authorization
-
-- Current Phase: **Phase 2B**
-- Work Unit: **Visual Polish**
-- Status: **AWAITING_CHATGPT_REVIEW**
-- Latest Reviewed Implementation:
-  `26dfdb29aeb9854631d925d594ac7e5aecf73022`
-- Baseline Review Sync:
-  `eba4f8e8b39aa03616ebeb5fe9334701cab0c23e`
-- Phase 2B Handoff Sync:
-  `54bd99d750ffcd47f2a26a2af9ade678591312c6`
-- Phase 2B Review Target:
-  `b6ff62966387df9eebc1d322cf14d89133a51276`
-- Codex Visual QA: **PASS**
-- ChatGPT Review: **PENDING**
-- Evidence:
-  - `docs/evidence/phase-2b/intro.png`
-  - `docs/evidence/phase-2b/countdown.png`
-  - `docs/evidence/phase-2b/result.png`
-- Forbidden: additional implementation and **all Phase 3 work** until a new
-  explicit state transition is recorded.
-
-## Phase 2A Baseline Receipt
+## Phase 2B Final Review Receipt
 
 - Decision: **APPROVE**
-- Approved Implementation:
-  `26dfdb29aeb9854631d925d594ac7e5aecf73022`
+- Approved Implementation / Latest Reviewed Implementation:
+  `b6ff62966387df9eebc1d322cf14d89133a51276`
 - Reviewed State Snapshot:
-  `6bfc6529b42259d1dc9cf845f55f3396c6e04ffa`
+  `59b75cbc3af84148721bc58e5870d4c6ba9f8fed`
+- Handoff Sync:
+  `54bd99d750ffcd47f2a26a2af9ade678591312c6`
 - Code / State Review: **PASS**
 - Codex Visual QA: **PASS**
 - ChatGPT Final Visual Review: **PASS**
-- Evidence:
-  - `docs/evidence/phase-2a/intro.png`
-  - `docs/evidence/phase-2a/playing.png`
-  - `docs/evidence/phase-2a/result.png`
-
-This Phase 2A receipt remains the approved baseline and does not authorize any
-gameplay-rule change during Phase 2B.
+- Evidence reviewed:
+  - `docs/evidence/phase-2b/intro.png`
+  - `docs/evidence/phase-2b/countdown.png`
+  - `docs/evidence/phase-2b/result.png`
+- Deferred Visual Validation:
+  - motion trail → Phase 3
+  - tag effect → relevant gameplay phase
+  - shock effect → relevant gameplay phase
+- Phase Gate: **Phase 3 must not start until a new Work Unit explicitly
+  authorizes it.**
