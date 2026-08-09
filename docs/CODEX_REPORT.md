@@ -16,6 +16,144 @@
   pushed and its state is verified.
 - Phase Gate: **Phase 3 is PROHIBITED.**
 
+## Phase 2B Visual Polish Implementation — 2026-08-09
+
+### Objective
+
+Improve the readability, immediacy, and presentation quality of the approved
+Phase 2A ten-second gameplay shell without changing gameplay rules, input, CPU
+behavior, or the Phase 2A safe-area layout.
+
+### Implementation
+
+- Added short, self-removing actor afterimages that are emitted only when the
+  observed engine position has actually changed beyond a small visual
+  threshold. No artificial movement was introduced.
+- Added primary and secondary expanding Shock rings, a compact origin flash,
+  and a short arena flash. Shock presentation is triggered only by observing a
+  cooldown transition from ready to active on the actor who was IT.
+- Added an IT-transfer beam, `TAG!` label, destination ring, burst, and short
+  arena flash. Transfer presentation is triggered only by observing the
+  authoritative IT-state difference.
+- Added a large central 3 / 2 / 1 countdown with a ring, scale pulse, fade, and
+  short radial dashes while retaining the readable HUD timer.
+- Added a quick FIGHT entrance/exit and arena flash without extending the
+  existing 1.1-second intro.
+- Added result shade fade, title pop, accent line, detail-text entrance, and
+  bounded particles. `YOU HELD THE BOMB AT 0` / `CPU HELD THE BOMB AT 0`
+  remains unobstructed and readable.
+- Added subtle actor aura/highlight and fuse pulse while preserving non-color
+  IT identification through the `IT` text, bomb marker, and ring.
+- Added an urgent HUD timer plate and clearer ready/cooldown colors without
+  introducing a second timer or gameplay state.
+- Every temporary effect node ends with `removeFromParent()`.
+
+### Changed Files
+
+- `Sources/TAG10App/GameScene.swift`
+- `Sources/TAG10App/ActorNode.swift`
+- `Sources/TAG10App/GameHUDNode.swift`
+- `Sources/TAG10App/GameEffectsNode.swift`
+- `TAG10.xcodeproj/project.pbxproj`
+- `docs/CODEX_REPORT.md`
+- `docs/evidence/phase-2b/intro.png`
+- `docs/evidence/phase-2b/countdown.png`
+- `docs/evidence/phase-2b/result.png`
+
+TAG10Core, `GameEngine`, `GameConfig`, tests, `docs/GAME_RULES.md`, gameplay
+balance, input, CPU AI, and the SwiftUI safe-area layout were not changed.
+
+### Build
+
+Command:
+
+```sh
+xcodebuild \
+  -project TAG10.xcodeproj \
+  -scheme TAG10 \
+  -configuration Debug \
+  -destination 'generic/platform=iOS' \
+  -derivedDataPath work/Phase2BBuild \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+Result: **PASS — BUILD SUCCEEDED**.
+
+The iPhone 17 Pro Simulator build also passed using the exact device UDID and
+`work/Phase2BVisualQADerivedData`.
+
+### Tests
+
+Standard command:
+
+```sh
+xcodebuild \
+  -project TAG10.xcodeproj \
+  -scheme TAG10CoreTests \
+  -configuration Debug \
+  -destination 'platform=macOS' \
+  -derivedDataPath work/Phase2BTestDerivedData \
+  CODE_SIGNING_ALLOWED=NO \
+  test
+```
+
+Result: **INFRASTRUCTURE FAIL** after building the test bundle because the
+sandbox denied `com.apple.testmanagerd.control` communication.
+
+Direct execution of the exact compiled bundle:
+
+```sh
+/Applications/Xcode.app/Contents/Developer/usr/bin/xctest \
+  work/Phase2BTestDerivedData/Build/Products/Debug/TAG10CoreTests.xctest
+```
+
+Result: **PASS — 13 tests executed, 0 failures**.
+
+### Simulator Visual QA
+
+- Result: **PASS**
+- Device: **iPhone 17 Pro**
+- Runtime: **iOS 26.5**
+- Orientation: portrait
+- Simulator UDID: `9D870918-AC43-4F0C-9C63-49B824D22C5B`
+- Verified normal transition: **FIGHT → PLAYING → LOSE**
+- FIGHT and its start-state explanation are immediately readable.
+- The HUD, arena, timer plate, and actors stay clear of the Dynamic Island,
+  status bar, home indicator, and screen edges.
+- The final countdown is large and centered within the arena; the HUD timer
+  remains visible and does not clip.
+- LOSE is immediately recognizable and `YOU HELD THE BOMB AT 0` remains clear
+  over the result shade.
+- PLAYER / CPU remain visually distinct, and IT remains identifiable through
+  text, bomb, and ring rather than color alone.
+
+Evidence:
+
+- `docs/evidence/phase-2b/intro.png`
+- `docs/evidence/phase-2b/countdown.png`
+- `docs/evidence/phase-2b/result.png`
+
+### Deferred Visual Validation
+
+- Motion trail → **Phase 3**, when real actor movement exists.
+- Tag effect → **relevant gameplay phase**, when a normal tag can occur.
+- Shock effect → **relevant gameplay phase**, when a normal Shock can fire.
+
+The Phase 2B shell contains transition-based presentation for these events, but
+no movement, input, or AI was added solely to manufacture evidence.
+
+### Deviations / Unresolved
+
+- The first Simulator recording was obscured by a pre-existing system Apple
+  Account sign-in dialog from another app. The dialog was dismissed and a clean
+  TAG10 run was recorded; this was not a TAG10 defect.
+- Standard `xcodebuild test` remains blocked by the execution sandbox; direct
+  `xctest` passed the exact built bundle.
+- Physical-device Visual QA remains unresolved.
+- No gameplay, balance, or Phase 3 deviation was made. **Phase 3 was not
+  started.**
+
 ## Phase 2A Objective
 
 Implement only **Phase 2A — Visual gameplay shell** for the native TAG10 iOS

@@ -1,7 +1,7 @@
 import SpriteKit
 import TAG10Core
 
-/// SpriteKit presentation for the Phase 2A FLAT-stage gameplay shell.
+/// SpriteKit presentation for the FLAT-stage gameplay shell and visual polish.
 /// `GameEngine` remains the sole source of gameplay time, state, and results.
 final class GameScene: SKScene {
     private enum VisualConfig {
@@ -10,6 +10,28 @@ final class GameScene: SKScene {
         static let hudHeight: CGFloat = 102
         static let arenaInset: CGFloat = 12
         static let arenaBottomInset: CGFloat = 48
+        static let trailMovementThreshold: CGFloat = 0.75
+        static let trailEmissionInterval: TimeInterval = 0.045
+    }
+
+    /// A render-only observation of engine values used to detect visual events.
+    /// It never feeds state back into `GameEngine`.
+    private struct VisualSnapshot {
+        let playerPosition: Vector2
+        let cpuPosition: Vector2
+        let playerIsIt: Bool
+        let cpuIsIt: Bool
+        let playerShockCooldown: TimeInterval
+        let cpuShockCooldown: TimeInterval
+
+        init(engine: GameEngine) {
+            playerPosition = engine.player.position
+            cpuPosition = engine.cpu.position
+            playerIsIt = engine.player.isIt
+            cpuIsIt = engine.cpu.isIt
+            playerShockCooldown = engine.player.shockCooldownRemaining
+            cpuShockCooldown = engine.cpu.shockCooldownRemaining
+        }
     }
 
     private var engine = GameEngine.randomMatch(
@@ -18,13 +40,16 @@ final class GameScene: SKScene {
     )
 
     private let arenaLayer = SKNode()
-    private let effectsLayer = SKNode()
+    private let effectsLayer = GameEffectsNode()
     private let playerNode = ActorNode(name: "PLAYER", color: .tag10Cyan)
     private let cpuNode = ActorNode(name: "CPU", color: .tag10Orange)
     private let hudNode = GameHUDNode()
     private let fightLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
     private let introLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
+    private let countdownHalo = SKShapeNode(circleOfRadius: 72)
+    private let countdownLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
     private let resultShade = SKShapeNode()
+    private let resultAccent = SKShapeNode(rectOf: CGSize(width: 128, height: 3), cornerRadius: 1.5)
     private let resultLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
     private let resultDetailLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
 
@@ -34,6 +59,10 @@ final class GameScene: SKScene {
     private var didPresentFight = false
     private var didPresentResult = false
     private var isConfigured = false
+    private var previousVisualSnapshot: VisualSnapshot?
+    private var previousCountdownNumber: Int?
+    private var lastPlayerTrailTime: TimeInterval = -1000
+    private var lastCPUtrailTime: TimeInterval = -1000
 
     override func didMove(to view: SKView) {
         guard !isConfigured else { return }
@@ -50,6 +79,8 @@ final class GameScene: SKScene {
         configurePhaseLabels()
         layoutScene()
         renderEngineState()
+        previousVisualSnapshot = VisualSnapshot(engine: engine)
+        presentIntroEntrance()
     }
 
     override func didChangeSize(_ oldSize: CGSize) {
@@ -86,7 +117,9 @@ final class GameScene: SKScene {
             presentResultIfNeeded()
         }
 
+        presentVisualStateChanges()
         renderEngineState()
+        updateCountdownPresentation()
     }
 
     private var arenaFrame: CGRect {
@@ -111,13 +144,34 @@ final class GameScene: SKScene {
 
         introLabel.fontSize = 15
         introLabel.zPosition = 50
+        introLabel.alpha = 0
         addChild(introLabel)
+
+        countdownHalo.fillColor = SKColor(red: 1, green: 0.08, blue: 0.16, alpha: 0.08)
+        countdownHalo.strokeColor = .tag10Red
+        countdownHalo.lineWidth = 3
+        countdownHalo.zPosition = 44
+        countdownHalo.isHidden = true
+        addChild(countdownHalo)
+
+        countdownLabel.fontSize = 116
+        countdownLabel.fontColor = .white
+        countdownLabel.verticalAlignmentMode = .center
+        countdownLabel.zPosition = 45
+        countdownLabel.isHidden = true
+        addChild(countdownLabel)
 
         resultShade.fillColor = SKColor(white: 0.02, alpha: 0.78)
         resultShade.strokeColor = .clear
         resultShade.zPosition = 80
         resultShade.isHidden = true
         addChild(resultShade)
+
+        resultAccent.fillColor = .tag10Gold
+        resultAccent.strokeColor = .clear
+        resultAccent.zPosition = 81
+        resultAccent.isHidden = true
+        addChild(resultAccent)
 
         resultLabel.fontSize = 66
         resultLabel.zPosition = 81
@@ -138,9 +192,13 @@ final class GameScene: SKScene {
         hudNode.layout(width: size.width, top: size.height)
         fightLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.54)
         introLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.45)
+        let countdownPosition = CGPoint(x: arenaFrame.midX, y: arenaFrame.minY + arenaFrame.height * 0.52)
+        countdownHalo.position = countdownPosition
+        countdownLabel.position = countdownPosition
 
         resultShade.path = CGPath(rect: CGRect(origin: .zero, size: size), transform: nil)
         resultLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.57)
+        resultAccent.position = CGPoint(x: size.width / 2, y: size.height * 0.535)
         resultDetailLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.49)
 
         positionActors()
@@ -222,6 +280,8 @@ final class GameScene: SKScene {
     private func presentFightTransition() {
         guard !didPresentFight else { return }
         didPresentFight = true
+        fightLabel.removeAllActions()
+        introLabel.removeAllActions()
         introLabel.run(.fadeOut(withDuration: 0.15))
         fightLabel.run(
             .sequence([
@@ -232,7 +292,37 @@ final class GameScene: SKScene {
                 .hide(),
             ])
         )
-        emitBurst(at: CGPoint(x: size.width / 2, y: size.height * 0.54), color: .tag10Gold, count: 12)
+        effectsLayer.flashArena(
+            in: arenaFrame,
+            color: .tag10Gold,
+            peakAlpha: 0.14,
+            duration: 0.20
+        )
+        effectsLayer.emitBurst(
+            at: CGPoint(x: size.width / 2, y: size.height * 0.54),
+            color: .tag10Gold,
+            count: 12
+        )
+    }
+
+    private func presentIntroEntrance() {
+        fightLabel.alpha = 0
+        fightLabel.setScale(0.62)
+        fightLabel.run(
+            .sequence([
+                .group([
+                    .fadeIn(withDuration: 0.13),
+                    .scale(to: 1.08, duration: 0.17),
+                ]),
+                .scale(to: 1, duration: 0.07),
+            ])
+        )
+        introLabel.run(
+            .sequence([
+                .wait(forDuration: 0.08),
+                .fadeIn(withDuration: 0.15),
+            ])
+        )
     }
 
     private func presentResultIfNeeded() {
@@ -240,46 +330,180 @@ final class GameScene: SKScene {
         didPresentResult = true
 
         resultShade.isHidden = false
+        resultAccent.isHidden = false
         resultLabel.isHidden = false
         resultDetailLabel.isHidden = false
         resultLabel.text = result == .win ? "WIN" : "LOSE"
         resultLabel.fontColor = result == .win ? .tag10Mint : .tag10Red
         resultDetailLabel.text = engine.player.isIt ? "YOU HELD THE BOMB AT 0" : "CPU HELD THE BOMB AT 0"
 
+        countdownHalo.isHidden = true
+        countdownLabel.isHidden = true
+        resultShade.alpha = 0
+        resultShade.run(.fadeAlpha(to: 1, duration: 0.16))
+
         let loserPosition = engine.player.isIt ? playerNode.position : cpuNode.position
-        emitBurst(
+        effectsLayer.emitBurst(
             at: loserPosition,
             color: result == .win ? .tag10Gold : .tag10Red,
             count: 24
         )
 
-        resultLabel.setScale(0.7)
-        resultLabel.run(.scale(to: 1, duration: 0.22))
+        resultAccent.alpha = 0
+        resultAccent.xScale = 0.2
+        resultAccent.run(
+            .group([
+                .fadeIn(withDuration: 0.18),
+                .scaleX(to: 1, duration: 0.22),
+            ])
+        )
+
+        resultLabel.alpha = 0
+        resultLabel.setScale(0.64)
+        resultLabel.run(
+            .sequence([
+                .group([
+                    .fadeIn(withDuration: 0.12),
+                    .scale(to: 1.08, duration: 0.18),
+                ]),
+                .scale(to: 1, duration: 0.08),
+            ])
+        )
+
+        let detailPosition = resultDetailLabel.position
+        resultDetailLabel.position.y -= 10
+        resultDetailLabel.alpha = 0
+        resultDetailLabel.run(
+            .sequence([
+                .wait(forDuration: 0.10),
+                .group([
+                    .fadeIn(withDuration: 0.18),
+                    .move(to: detailPosition, duration: 0.18),
+                ]),
+            ])
+        )
+
+        effectsLayer.emitBurst(
+            at: CGPoint(x: size.width / 2, y: size.height * 0.57),
+            color: result == .win ? .tag10Mint : .tag10Red,
+            count: 28
+        )
     }
 
-    private func emitBurst(at position: CGPoint, color: SKColor, count: Int) {
-        for index in 0..<count {
-            let particle = SKShapeNode(circleOfRadius: CGFloat.random(in: 2...4))
-            particle.fillColor = color
-            particle.strokeColor = .clear
-            particle.position = position
-            particle.zPosition = 70
-            effectsLayer.addChild(particle)
+    private func presentVisualStateChanges() {
+        let current = VisualSnapshot(engine: engine)
+        defer { previousVisualSnapshot = current }
+        guard let previous = previousVisualSnapshot else { return }
 
-            let angle = CGFloat(index) / CGFloat(count) * .pi * 2
-            let distance = CGFloat.random(in: 34...88)
-            let destination = CGVector(dx: cos(angle) * distance, dy: sin(angle) * distance)
-            particle.run(
-                .sequence([
-                    .group([
-                        .move(by: destination, duration: 0.46),
-                        .fadeOut(withDuration: 0.46),
-                        .scale(to: 0.25, duration: 0.46),
-                    ]),
-                    .removeFromParent(),
-                ])
+        if engine.phase == .playing {
+            emitMotionTrails(previous: previous, current: current)
+        }
+
+        if didFireShock(previous: previous, current: current, actor: .player) {
+            effectsLayer.emitShockWave(
+                at: point(for: previous.playerPosition),
+                color: .tag10Cyan,
+                arenaFrame: arenaFrame
             )
         }
+        if didFireShock(previous: previous, current: current, actor: .cpu) {
+            effectsLayer.emitShockWave(
+                at: point(for: previous.cpuPosition),
+                color: .tag10Orange,
+                arenaFrame: arenaFrame
+            )
+        }
+
+        guard previous.playerIsIt != current.playerIsIt else { return }
+        let source = previous.playerIsIt ? previous.playerPosition : previous.cpuPosition
+        let destination = current.playerIsIt ? current.playerPosition : current.cpuPosition
+        effectsLayer.emitTagTransfer(
+            from: point(for: source),
+            to: point(for: destination),
+            arenaFrame: arenaFrame
+        )
+    }
+
+    private func didFireShock(
+        previous: VisualSnapshot,
+        current: VisualSnapshot,
+        actor: ActorID
+    ) -> Bool {
+        switch actor {
+        case .player:
+            return previous.playerIsIt
+                && previous.playerShockCooldown == 0
+                && current.playerShockCooldown > 0
+        case .cpu:
+            return previous.cpuIsIt
+                && previous.cpuShockCooldown == 0
+                && current.cpuShockCooldown > 0
+        }
+    }
+
+    private func emitMotionTrails(previous: VisualSnapshot, current: VisualSnapshot) {
+        let previousPlayerPoint = point(for: previous.playerPosition)
+        let currentPlayerPoint = point(for: current.playerPosition)
+        if distance(from: previousPlayerPoint, to: currentPlayerPoint) >= VisualConfig.trailMovementThreshold,
+           visualTime - lastPlayerTrailTime >= VisualConfig.trailEmissionInterval {
+            effectsLayer.emitAfterimage(at: previousPlayerPoint, color: .tag10Cyan)
+            lastPlayerTrailTime = visualTime
+        }
+
+        let previousCPUPoint = point(for: previous.cpuPosition)
+        let currentCPUPoint = point(for: current.cpuPosition)
+        if distance(from: previousCPUPoint, to: currentCPUPoint) >= VisualConfig.trailMovementThreshold,
+           visualTime - lastCPUtrailTime >= VisualConfig.trailEmissionInterval {
+            effectsLayer.emitAfterimage(at: previousCPUPoint, color: .tag10Orange)
+            lastCPUtrailTime = visualTime
+        }
+    }
+
+    private func distance(from start: CGPoint, to end: CGPoint) -> CGFloat {
+        hypot(end.x - start.x, end.y - start.y)
+    }
+
+    private func updateCountdownPresentation() {
+        guard engine.phase == .playing,
+              !engine.isTimerPaused,
+              engine.remainingTime > 0,
+              engine.remainingTime <= 3 else {
+            countdownHalo.isHidden = true
+            countdownLabel.isHidden = true
+            previousCountdownNumber = nil
+            return
+        }
+
+        let number = Int(ceil(engine.remainingTime))
+        countdownHalo.isHidden = false
+        countdownLabel.isHidden = false
+        countdownLabel.text = String(number)
+
+        guard number != previousCountdownNumber else { return }
+        previousCountdownNumber = number
+
+        countdownLabel.removeAllActions()
+        countdownHalo.removeAllActions()
+        countdownLabel.alpha = 1
+        countdownLabel.setScale(0.62)
+        countdownLabel.run(
+            .sequence([
+                .scale(to: 1.06, duration: 0.13),
+                .scale(to: 1, duration: 0.07),
+                .wait(forDuration: 0.48),
+                .fadeAlpha(to: 0.34, duration: 0.20),
+            ])
+        )
+
+        countdownHalo.alpha = 0.86
+        countdownHalo.setScale(0.72)
+        countdownHalo.run(
+            .group([
+                .scale(to: 1.16, duration: 0.32),
+                .fadeAlpha(to: 0.18, duration: 0.32),
+            ])
+        )
+        effectsLayer.emitCountdownBurst(at: countdownLabel.position, number: number)
     }
 }
 

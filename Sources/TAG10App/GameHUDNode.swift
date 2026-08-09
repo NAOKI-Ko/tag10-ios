@@ -5,6 +5,7 @@ import TAG10Core
 /// Read-only HUD projection of `GameEngine` state.
 final class GameHUDNode: SKNode {
     private let background = SKShapeNode()
+    private let timerPlate = SKShapeNode()
     private let timerLabel = SKLabelNode(fontNamed: "Menlo-Bold")
     private let heatLabel = SKLabelNode(fontNamed: "Menlo-Bold")
     private let stateLabel = SKLabelNode(fontNamed: "AvenirNext-Heavy")
@@ -20,6 +21,11 @@ final class GameHUDNode: SKNode {
         background.strokeColor = SKColor(white: 1, alpha: 0.09)
         background.lineWidth = 1
         addChild(background)
+
+        timerPlate.fillColor = SKColor(white: 1, alpha: 0.045)
+        timerPlate.strokeColor = SKColor(white: 1, alpha: 0.10)
+        timerPlate.lineWidth = 1
+        addChild(timerPlate)
 
         timerLabel.fontSize = 27
         addChild(timerLabel)
@@ -53,6 +59,13 @@ final class GameHUDNode: SKNode {
             transform: nil
         )
 
+        timerPlate.path = CGPath(
+            roundedRect: CGRect(x: width / 2 - 48, y: top - 54, width: 96, height: 42),
+            cornerWidth: 12,
+            cornerHeight: 12,
+            transform: nil
+        )
+
         timerLabel.position = CGPoint(x: width / 2, y: top - 31)
         heatLabel.position = CGPoint(x: width / 2, y: top - 51)
         stateLabel.position = CGPoint(x: width / 2, y: top - 78)
@@ -65,7 +78,15 @@ final class GameHUDNode: SKNode {
 
     func render(engine: GameEngine) {
         timerLabel.text = timerText(engine.remainingTime)
-        timerLabel.fontColor = engine.remainingTime <= 3 ? .tag10Red : .white
+        let isFinalCountdown = engine.phase == .playing && engine.remainingTime <= 3
+        timerLabel.fontColor = isFinalCountdown ? .tag10Red : .white
+        timerLabel.fontSize = isFinalCountdown ? 31 : 27
+        timerPlate.fillColor = isFinalCountdown
+            ? .tag10Red.withAlphaComponent(0.10)
+            : SKColor(white: 1, alpha: 0.045)
+        timerPlate.strokeColor = isFinalCountdown
+            ? .tag10Red.withAlphaComponent(0.72)
+            : SKColor(white: 1, alpha: 0.10)
 
         let bonusPercent = Int(round((engine.heatMultiplier - 1) * 100))
         heatLabel.text = "HEAT ×\(engine.tagCount)  +\(bonusPercent)%"
@@ -80,6 +101,8 @@ final class GameHUDNode: SKNode {
 
         playerShockLabel.text = shockText(name: "P1", actor: engine.player)
         cpuShockLabel.text = shockText(name: "CPU", actor: engine.cpu)
+        playerShockLabel.fontColor = shockColor(actor: engine.player)
+        cpuShockLabel.fontColor = shockColor(actor: engine.cpu)
         pauseLabel.text = engine.isTimerPaused ? "TIMER PAUSED • STUN" : phaseText(engine.phase)
         pauseLabel.alpha = engine.isTimerPaused ? 1 : 0.62
     }
@@ -98,6 +121,13 @@ final class GameHUDNode: SKNode {
             return String(format: "%@ ARM / COOLDOWN %.1fs", name, actor.shockCooldownRemaining)
         }
         return "\(name) SHOCK READY"
+    }
+
+    private func shockColor(actor: ActorState) -> SKColor {
+        guard actor.isIt else { return SKColor(white: 0.48, alpha: 1) }
+        if actor.isStunned { return .tag10Red }
+        if actor.shockCooldownRemaining > 0 { return SKColor(white: 0.68, alpha: 1) }
+        return .tag10Gold
     }
 
     private func phaseText(_ phase: MatchPhase) -> String {

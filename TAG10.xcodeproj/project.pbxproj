@@ -21,6 +21,7 @@
 		10000000000000000000000C /* TAG10Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* TAG10Core.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		10000000000000000000000D /* ActorNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000C /* ActorNode.swift */; };
 		10000000000000000000000E /* GameHUDNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* GameHUDNode.swift */; };
+		10000000000000000000000F /* GameEffectsNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* GameEffectsNode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +80,7 @@
 		20000000000000000000000B /* TAG10CoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TAG10CoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		20000000000000000000000C /* ActorNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorNode.swift; sourceTree = "<group>"; };
 		20000000000000000000000D /* GameHUDNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameHUDNode.swift; sourceTree = "<group>"; };
+		20000000000000000000000E /* GameEffectsNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEffectsNode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +147,7 @@
 				200000000000000000000007 /* GameScene.swift */,
 				20000000000000000000000C /* ActorNode.swift */,
 				20000000000000000000000D /* GameHUDNode.swift */,
+				20000000000000000000000E /* GameEffectsNode.swift */,
 			);
 			path = TAG10App;
 			sourceTree = "<group>";
@@ -311,6 +314,7 @@
 				100000000000000000000007 /* GameScene.swift in Sources */,
 				10000000000000000000000D /* ActorNode.swift in Sources */,
 				10000000000000000000000E /* GameHUDNode.swift in Sources */,
+				10000000000000000000000F /* GameEffectsNode.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
