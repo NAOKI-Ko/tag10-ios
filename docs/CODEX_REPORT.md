@@ -1041,3 +1041,173 @@ current blocker.
 Begin Phase 5 only when an explicit Work Unit authorizes it. Carry the Phase 3
 physical-device Motion Human Gate forward for later device validation. Do not
 start Phase 6 or merge this branch to main automatically.
+
+## Phase 5 — Haptics / Sound / Game Feel (2026-08-12)
+
+### Objective
+
+Add native, presentation-only feedback for match start, Direct TAG, SHOCK,
+STUN, the final countdown, and results without changing authoritative gameplay,
+CPU AI, stage physics, HEAT, rating, or balance.
+
+### Implementation
+
+- Added pure `FeedbackEvent` and `FeedbackEventRouter` types to TAG10Core.
+  The router consumes authoritative outcomes and time/phase edges but never
+  writes to `GameEngine`.
+- Connected `GameScene` command outcomes to the router for Direct TAG and
+  PLAYER/CPU SHOCK, and observes authoritative countdown/result transitions.
+- Added one-shot protection for countdown 3/2/1 and results, unavailable/intro
+  SHOCK suppression, and complete next-match feedback reset.
+- Added `GameFeedbackController` as a presentation-only fan-out to UIKit
+  haptics and AVFoundation sound.
+- Added receiver-aware impact/notification haptics. PLAYER and CPU events use
+  different intensity/semantic responses where useful.
+- Added short, original procedural SFX generated at runtime by AVAudioEngine.
+  No external/copyrighted assets or third-party dependencies were added.
+- Kept the default app audio session policy; Phase 5 does not change the
+  process-wide AVAudioSession category.
+- Direct TAG + STUN and SHOCK transfer + STUN are composite feedback cues. This
+  avoids two strong haptics back-to-back while the sound pattern contains both
+  transfer and low STUN accents.
+- DEBUG builds print one line per routed event for Simulator event auditing.
+- Existing visual effects were not redesigned or retuned.
+
+### Changed Files
+
+- `Sources/TAG10Core/GameModels.swift`
+- `Sources/TAG10App/GameScene.swift`
+- `Sources/TAG10App/GameEffectsNode.swift`
+- `Tests/TAG10CoreTests/GameCoreTests.swift`
+- `docs/START_HERE.md`
+- `docs/PROJECT_STATE.md`
+- `docs/REVIEW_LOG.md`
+- `docs/CODEX_REPORT.md`
+- `docs/evidence/phase-5/README.md`
+
+`GameEngine.swift`, `GameConfig.swift`, `GAME_RULES.md`, CPU/stage code,
+`TAG10.xcodeproj`, and all visual assets remain unchanged.
+
+### Feedback Events
+
+- FIGHT / match start: medium start impact + two-tone electronic cue
+- countdown 3/2: light impact + low tick
+- countdown 1: medium impact + stronger tick
+- Direct TAG / resulting STUN: one receiver-aware composite impact and
+  punchy transfer/STUN sound
+- SHOCK miss: one distinct rigid impact and rising sweep
+- SHOCK transfer / resulting STUN: one success/error notification and
+  composite fire/transfer/STUN sound
+- WIN: success notification + ascending four-note cue
+- LOSE: error notification + descending four-note cue
+
+### Tests
+
+Added eight rendering-independent tests:
+
+1. Direct TAG emits once and protected contact emits nothing.
+2. SHOCK miss, transfer, and unavailable outcomes route differently.
+3. CPU SHOCK routes with CPU ownership and PLAYER receiver.
+4. Countdown 3/2/1 each emits exactly once.
+5. WIN and LOSE each route once.
+6. Intro SHOCK produces no feedback.
+7. Repeated finished observation does not replay result.
+8. A new match resets countdown/result feedback state.
+
+Standard command:
+
+```sh
+xcodebuild -project TAG10.xcodeproj -scheme TAG10CoreTests \
+  -configuration Debug -destination 'platform=macOS' \
+  -derivedDataPath /private/tmp/tag10-phase5-tests \
+  CODE_SIGNING_ALLOWED=NO test
+```
+
+Result: **INFRASTRUCTURE FAIL** after successfully building the test bundle;
+the sandbox denied `com.apple.testmanagerd.control` communication.
+
+Direct execution of the exact generated bundle:
+
+```sh
+/Applications/Xcode.app/Contents/Developer/usr/bin/xctest \
+  /private/tmp/tag10-phase5-tests/Build/Products/Debug/TAG10CoreTests.xctest
+```
+
+Result: **PASS — 71 tests executed, 0 failures**. All existing 63 tests pass.
+
+### Build
+
+Generic iOS:
+
+```sh
+xcodebuild -project TAG10.xcodeproj -scheme TAG10 \
+  -configuration Debug -destination 'generic/platform=iOS' \
+  -derivedDataPath /private/tmp/tag10-phase5-ios \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+Result: **PASS — BUILD SUCCEEDED**.
+
+Generic iOS Simulator:
+
+```sh
+xcodebuild -project TAG10.xcodeproj -scheme TAG10 \
+  -configuration Debug -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath /private/tmp/tag10-phase5-sim \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+Result: **PASS — BUILD SUCCEEDED**.
+
+Exact iPhone 17 Pro destination build: **BLOCKED** because Xcode lost access to
+CoreSimulatorService and reported no matching Simulator destination.
+
+### Simulator QA / Evidence
+
+- `xcrun simctl list devices available` observed the booted Phase 4 QA iPhone
+  17 Pro / iOS 26.5 device.
+- Installing the current Generic Simulator build failed before app execution
+  because the sandbox denied CoreSimulatorService access.
+- FIGHT, Direct TAG, PLAYER/CPU SHOCK, countdown, results, audio playback,
+  duplicate-sound behavior, consecutive matches, and FLAT/BOWL/PILLAR
+  regression are therefore **NOT SIMULATOR PASS** in this run.
+- No prior screenshot was copied or presented as current-build evidence.
+- `docs/evidence/phase-5/README.md` records the missing evidence gate. Required
+  PNGs remain: `fight.png`, `direct-tag.png`, `shock-tag.png`, `countdown.png`,
+  and `result.png`.
+
+### Human Gates
+
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Phase 5 Device Haptic / Sound QA: **PENDING HUMAN GATE**
+- Required device checks: Direct TAG, SHOCK fire, SHOCK TAG, STUN, countdown,
+  WIN/LOSE feel; excessive vibration; actual volume/speaker clarity; and
+  haptic/sound synchronization.
+
+### Status / Deviations / Blockers
+
+- Phase 4: **CLOSED / APPROVED**
+- Phase 5: **IMPLEMENTED / REVIEW PENDING**
+- Latest Reviewed Implementation remains:
+  `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
+- Phase 5 ChatGPT Code Review: **PENDING**
+- Simulator Audio / Event QA and five current-build evidence frames:
+  **BLOCKED by sandbox CoreSimulatorService access**
+- GitHub branch push: **BLOCKED** — shell Git could not resolve `github.com`;
+  GitHub app low-level blob publication returned `403 Resource not accessible
+  by integration`.
+- Gameplay/balance/spec deviations: **NONE**
+- Audio policy deviation: **NONE** — procedural original sound only
+- Visual polish changes: **NONE**
+- Main merged: **No**
+- Phase 6 started: **No**
+
+### Next Suggested Step
+
+Push the local Phase 5 implementation commit from a network-enabled,
+GitHub-authenticated environment. Then run the current build in an unrestricted
+iPhone 17 Pro Simulator, verify the DEBUG event trace and audible SFX across
+5–10 matches and all three stages, capture the five required evidence frames,
+and request ChatGPT exact-SHA review. Complete Phase 3 Motion and Phase 5
+Haptic/Sound Human Gates on a physical iPhone before closing Phase 5. Do not
+merge main or begin Phase 6.

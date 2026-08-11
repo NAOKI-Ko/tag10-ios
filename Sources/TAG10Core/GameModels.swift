@@ -137,3 +137,89 @@ public enum Rank: String, Equatable, Sendable {
     case platinum = "PLATINUM"
     case diamond = "DIAMOND"
 }
+
+/// Rendering-independent presentation events. These values never mutate
+/// gameplay state; platform feedback services consume them downstream.
+public enum FeedbackEvent: Equatable, Sendable {
+    case matchStart
+    case countdown(Int)
+    case directTag(pusher: ActorID, receiver: ActorID)
+    case shockFire(owner: ActorID)
+    case shockTransfer(owner: ActorID, receiver: ActorID)
+    case result(MatchResult)
+}
+
+/// Pure edge detector for presentation feedback. GameEngine outcomes remain
+/// authoritative, while this router guarantees one event per observed edge.
+public struct FeedbackEventRouter: Sendable {
+    private var previousRemainingTime: TimeInterval?
+    private var emittedCountdownNumbers: Set<Int> = []
+    private var didEmitResult = false
+
+    public init() {}
+
+    public mutating func startMatch() -> [FeedbackEvent] {
+        previousRemainingTime = GameConfig.matchDuration
+        emittedCountdownNumbers.removeAll()
+        didEmitResult = false
+        return [.matchStart]
+    }
+
+    public mutating func observe(
+        phase: MatchPhase,
+        remainingTime: TimeInterval,
+        timerPaused: Bool
+    ) -> [FeedbackEvent] {
+        switch phase {
+        case .intro:
+            previousRemainingTime = remainingTime
+            return []
+        case .playing:
+            let previous = previousRemainingTime ?? remainingTime
+            previousRemainingTime = remainingTime
+            guard !timerPaused else { return [] }
+
+            var events: [FeedbackEvent] = []
+            for number in [3, 2, 1] where
+                previous > Double(number)
+                && remainingTime <= Double(number)
+                && emittedCountdownNumbers.insert(number).inserted {
+                events.append(.countdown(number))
+            }
+            return events
+        case let .finished(result):
+            previousRemainingTime = remainingTime
+            guard !didEmitResult else { return [] }
+            didEmitResult = true
+            return [.result(result)]
+        }
+    }
+
+    public func directTag(
+        from pusher: ActorID,
+        didTransfer: Bool,
+        phase: MatchPhase
+    ) -> [FeedbackEvent] {
+        guard phase == .playing, didTransfer else { return [] }
+        return [.directTag(pusher: pusher, receiver: pusher.opponent)]
+    }
+
+    public func shock(
+        by owner: ActorID,
+        outcome: ShockOutcome,
+        phase: MatchPhase
+    ) -> [FeedbackEvent] {
+        guard phase == .playing else { return [] }
+        switch outcome {
+        case .unavailable:
+            return []
+        case .missed:
+            return [.shockFire(owner: owner)]
+        case .transferred:
+            return [
+                .shockFire(owner: owner),
+                .shockTransfer(owner: owner, receiver: owner.opponent),
+            ]
+        }
+    }
+}

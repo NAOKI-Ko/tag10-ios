@@ -714,6 +714,127 @@ final class GameCoreTests: XCTestCase {
         testMovementClampsToArenaBounds()
     }
 
+    func testFeedbackDirectTagEmitsOnceAndProtectedContactEmitsNothing() {
+        var router = FeedbackEventRouter()
+        _ = router.startMatch()
+        var game = readyForTag(playerStartsAsIt: true)
+
+        let firstTransfer = game.attemptDirectTag(from: .player)
+        XCTAssertEqual(
+            router.directTag(from: .player, didTransfer: firstTransfer, phase: game.phase),
+            [.directTag(pusher: .player, receiver: .cpu)]
+        )
+
+        let protectedTransfer = game.attemptDirectTag(from: .cpu)
+        XCTAssertEqual(
+            router.directTag(from: .cpu, didTransfer: protectedTransfer, phase: game.phase),
+            []
+        )
+    }
+
+    func testFeedbackDistinguishesShockMissFromTransfer() {
+        let router = FeedbackEventRouter()
+
+        XCTAssertEqual(
+            router.shock(by: .player, outcome: .missed, phase: .playing),
+            [.shockFire(owner: .player)]
+        )
+        XCTAssertEqual(
+            router.shock(by: .player, outcome: .transferred, phase: .playing),
+            [.shockFire(owner: .player), .shockTransfer(owner: .player, receiver: .cpu)]
+        )
+        XCTAssertEqual(
+            router.shock(by: .player, outcome: .unavailable, phase: .playing),
+            []
+        )
+    }
+
+    func testFeedbackRoutesCPUShock() {
+        let router = FeedbackEventRouter()
+
+        XCTAssertEqual(
+            router.shock(by: .cpu, outcome: .transferred, phase: .playing),
+            [.shockFire(owner: .cpu), .shockTransfer(owner: .cpu, receiver: .player)]
+        )
+    }
+
+    func testFeedbackCountdownThreeTwoOneEachEmitsOnce() {
+        var router = FeedbackEventRouter()
+        _ = router.startMatch()
+
+        XCTAssertEqual(router.observe(phase: .playing, remainingTime: 3.1, timerPaused: false), [])
+        XCTAssertEqual(
+            router.observe(phase: .playing, remainingTime: 2.99, timerPaused: false),
+            [.countdown(3)]
+        )
+        XCTAssertEqual(router.observe(phase: .playing, remainingTime: 2.7, timerPaused: false), [])
+        XCTAssertEqual(
+            router.observe(phase: .playing, remainingTime: 1.99, timerPaused: false),
+            [.countdown(2)]
+        )
+        XCTAssertEqual(
+            router.observe(phase: .playing, remainingTime: 0.99, timerPaused: false),
+            [.countdown(1)]
+        )
+        XCTAssertEqual(router.observe(phase: .playing, remainingTime: 0.4, timerPaused: false), [])
+    }
+
+    func testFeedbackRoutesWinAndLossOnce() {
+        var winRouter = FeedbackEventRouter()
+        _ = winRouter.startMatch()
+        XCTAssertEqual(
+            winRouter.observe(phase: .finished(.win), remainingTime: 0, timerPaused: false),
+            [.result(.win)]
+        )
+
+        var lossRouter = FeedbackEventRouter()
+        _ = lossRouter.startMatch()
+        XCTAssertEqual(
+            lossRouter.observe(phase: .finished(.loss), remainingTime: 0, timerPaused: false),
+            [.result(.loss)]
+        )
+    }
+
+    func testFeedbackIgnoresShockDuringIntro() {
+        let router = FeedbackEventRouter()
+
+        XCTAssertEqual(
+            router.shock(by: .player, outcome: .missed, phase: .intro),
+            []
+        )
+    }
+
+    func testFeedbackDoesNotRepeatFinishedResult() {
+        var router = FeedbackEventRouter()
+        _ = router.startMatch()
+
+        XCTAssertEqual(
+            router.observe(phase: .finished(.win), remainingTime: 0, timerPaused: false),
+            [.result(.win)]
+        )
+        XCTAssertEqual(
+            router.observe(phase: .finished(.win), remainingTime: 0, timerPaused: false),
+            []
+        )
+    }
+
+    func testFeedbackStateResetsForNextMatch() {
+        var router = FeedbackEventRouter()
+        XCTAssertEqual(router.startMatch(), [.matchStart])
+        _ = router.observe(phase: .playing, remainingTime: 0.9, timerPaused: false)
+        _ = router.observe(phase: .finished(.loss), remainingTime: 0, timerPaused: false)
+
+        XCTAssertEqual(router.startMatch(), [.matchStart])
+        XCTAssertEqual(
+            router.observe(phase: .playing, remainingTime: 2.9, timerPaused: false),
+            [.countdown(3)]
+        )
+        XCTAssertEqual(
+            router.observe(phase: .finished(.win), remainingTime: 0, timerPaused: false),
+            [.result(.win)]
+        )
+    }
+
     private func readyForTag(playerStartsAsIt: Bool) -> GameEngine {
         var game = GameEngine(
             playerStartsAsIt: playerStartsAsIt,

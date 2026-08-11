@@ -41,8 +41,10 @@ final class GameScene: SKScene {
     )
     private var series = MatchSeriesState()
     private var progress = PlayerProgress()
+    private var feedbackRouter = FeedbackEventRouter()
 
     private let motionInputController = MotionInputController()
+    private let feedbackController = GameFeedbackController()
     private let arenaLayer = SKNode()
     private let effectsLayer = GameEffectsNode()
     private let playerNode = ActorNode(name: "PLAYER", color: .tag10Cyan)
@@ -92,11 +94,13 @@ final class GameScene: SKScene {
         renderEngineState()
         previousVisualSnapshot = VisualSnapshot(engine: engine)
         presentIntroEntrance()
+        dispatchFeedback(feedbackRouter.startMatch())
         motionInputController.start()
     }
 
     override func willMove(from view: SKView) {
         motionInputController.stop()
+        feedbackController.stop()
         super.willMove(from: view)
     }
 
@@ -139,6 +143,14 @@ final class GameScene: SKScene {
         if case .finished = engine.phase {
             presentResultIfNeeded()
         }
+
+        dispatchFeedback(
+            feedbackRouter.observe(
+                phase: engine.phase,
+                remainingTime: engine.remainingTime,
+                timerPaused: engine.isTimerPaused
+            )
+        )
 
         presentVisualStateChanges()
         renderEngineState()
@@ -424,6 +436,7 @@ final class GameScene: SKScene {
               ) else { return }
 
         let outcome = engine.useShock(by: .cpu, targetIsInRange: true)
+        dispatchFeedback(feedbackRouter.shock(by: .cpu, outcome: outcome, phase: engine.phase))
         effectsLayer.emitStatus(
             outcome == .transferred ? "CPU SHOCK TAG!" : "CPU SHOCK",
             at: CGPoint(x: arenaFrame.midX, y: arenaFrame.minY + 34),
@@ -440,7 +453,14 @@ final class GameScene: SKScene {
         ) else { return }
 
         let pusher: ActorID = engine.player.isIt ? .player : .cpu
-        engine.attemptDirectTag(from: pusher)
+        let didTransfer = engine.attemptDirectTag(from: pusher)
+        dispatchFeedback(
+            feedbackRouter.directTag(
+                from: pusher,
+                didTransfer: didTransfer,
+                phase: engine.phase
+            )
+        )
     }
 
     private func attemptPlayerShock() {
@@ -453,6 +473,7 @@ final class GameScene: SKScene {
             actorRadius: Double(ActorNode.visualRadius)
         )
         let outcome = engine.useShock(by: .player, targetIsInRange: targetIsInRange)
+        dispatchFeedback(feedbackRouter.shock(by: .player, outcome: outcome, phase: engine.phase))
 
         switch outcome {
         case .unavailable:
@@ -690,6 +711,11 @@ final class GameScene: SKScene {
         renderEngineState()
         previousVisualSnapshot = VisualSnapshot(engine: engine)
         presentIntroEntrance()
+        dispatchFeedback(feedbackRouter.startMatch())
+    }
+
+    private func dispatchFeedback(_ events: [FeedbackEvent]) {
+        feedbackController.handle(events)
     }
 
     private func presentVisualStateChanges() {

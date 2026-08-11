@@ -341,3 +341,54 @@ entries; correct an earlier statement with a new entry that cites it.
 - Next Work Unit: **Phase 5 — Haptics / Sound / Game Feel**
 - Phase Gate: **Do not begin Phase 5 without an explicit Work Unit; do not
   begin Phase 6 or merge to main automatically.**
+
+## 2026-08-12 — Phase 5 Haptics / Sound / Game Feel Implementation
+
+- Branch: `phase-5-game-feel`
+- Base / Phase 4 Final Review Sync:
+  `543a8af4616af6ca64e24900523d64128f6200bb`
+- Latest Reviewed Implementation remains:
+  `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
+- Phase 5 Review Target: the commit containing this append-only entry
+- Scope: pure one-shot feedback event routing, UIKit haptics, procedural
+  AVAudioEngine sound, DEBUG event trace, and no visual redesign
+- GameEngine / GameConfig / GAME_RULES changes: **NONE**
+- CPU AI / stage physics / rating or balance changes: **NONE**
+- Generic iOS Build: **PASS — BUILD SUCCEEDED**
+- Generic iOS Simulator Build: **PASS — BUILD SUCCEEDED**
+- Tests: **PASS — 71 XCTest methods, 0 failures**
+- Existing Phase 4 tests: **63 PASS**
+- Added feedback-routing tests: **8 PASS**
+- Standard `xcodebuild test`: **INFRASTRUCTURE FAIL** after bundle build because
+  sandbox denied `com.apple.testmanagerd.control`; direct execution of that
+  exact generated bundle passed.
+- Simulator install / launch: **BLOCKED** — CoreSimulatorService denied install
+  access in the Codex sandbox.
+- Simulator Audio / Event QA: **BLOCKED; no PASS claimed**
+- Phase 5 evidence PNGs: **NOT CAPTURED; no earlier image was relabeled**
+- Transfer/STUN design: **COMPOSITE FEEDBACK** to avoid duplicate strong
+  haptics while retaining TAG/SHOCK and STUN sound character.
+- Phase 5 Device Haptic / Sound QA: **PENDING HUMAN GATE**
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Phase 3 status: **NOT CLOSED**
+- Phase 4 status: **CLOSED / APPROVED**
+- Phase 5 status: **IMPLEMENTED / REVIEW PENDING**
+- Phase 5 ChatGPT Code Review: **PENDING**
+- Continuity: **BLOCKED ON REVIEW / SIMULATOR QA**
+- Next Action: run current-build Simulator Audio/Event QA, capture the five
+  required evidence frames, then request exact-SHA review.
+- Phase Gate: **Do not merge to main and do not begin Phase 6.**
+
+## 2026-08-12 — Phase 5 Publication Attempt
+
+- Local branch: `phase-5-game-feel`
+- Local implementation commit: the amended commit containing this entry
+- Shell `git push`: **BLOCKED** — sandbox DNS could not resolve `github.com`
+- GitHub app low-level publication fallback: **BLOCKED** — create-blob returned
+  `403 Resource not accessible by integration`
+- GitHub remote branch synchronization: **NOT COMPLETE**
+- Implementation/build/test status: **UNCHANGED**
+- Simulator/evidence/device gates: **UNCHANGED / PENDING**
+- Next Action: push the local implementation commit from a GitHub-authenticated,
+  network-enabled environment before exact-SHA review.
+- Phase Gate: **Do not merge to main and do not begin Phase 6.**
