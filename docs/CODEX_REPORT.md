@@ -1211,3 +1211,130 @@ iPhone 17 Pro Simulator, verify the DEBUG event trace and audible SFX across
 and request ChatGPT exact-SHA review. Complete Phase 3 Motion and Phase 5
 Haptic/Sound Human Gates on a physical iPhone before closing Phase 5. Do not
 merge main or begin Phase 6.
+
+## Phase 5 — Recovery / Simulator QA (2026-08-12)
+
+### Recovery / Publication
+
+- Branch: `phase-5-game-feel`
+- Recovery bundle: `/private/tmp/tag10-phase5-1f8f96d.bundle`
+- Recovered implementation:
+  `1f8f96de82add416ea8e170b8e7bd7441b6a7f6b`
+- Parent: `543a8af4616af6ca64e24900523d64128f6200bb`
+- Verification: **PASS — bundle complete, exact commit present, exact parent,
+  one implementation commit ahead**
+- GitHub implementation push: **PASS**
+- Remote implementation SHA:
+  `1f8f96de82add416ea8e170b8e7bd7441b6a7f6b`
+- Recovery used an isolated clone. The original workspace's uncommitted
+  signing-only `TAG10.xcodeproj/project.pbxproj` change was not overwritten,
+  staged, or committed.
+- Implementation code changed during recovery / QA: **No**
+
+### Build
+
+Generic iOS:
+
+```sh
+xcodebuild -quiet -project TAG10.xcodeproj -scheme TAG10 \
+  -configuration Debug -destination 'generic/platform=iOS' \
+  -derivedDataPath /private/tmp/tag10-phase5-recovery-ios \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+Result: **PASS**.
+
+Generic iOS Simulator:
+
+```sh
+xcodebuild -quiet -project TAG10.xcodeproj -scheme TAG10 \
+  -configuration Debug -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath /private/tmp/tag10-phase5-recovery-sim \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+Result: **PASS**.
+
+iPhone 17 Pro Simulator:
+
+```sh
+xcodebuild -quiet -project TAG10.xcodeproj -scheme TAG10 \
+  -configuration Debug \
+  -destination 'platform=iOS Simulator,id=9D870918-AC43-4F0C-9C63-49B824D22C5B' \
+  -derivedDataPath /private/tmp/tag10-phase5-recovery-device-sim \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+Result: **PASS**.
+
+### Tests
+
+Standard `xcodebuild test` rebuilt the test bundle but infrastructure denied
+`com.apple.testmanagerd.control`:
+
+```sh
+xcodebuild -quiet -project TAG10.xcodeproj -scheme TAG10CoreTests \
+  -configuration Debug -destination 'platform=macOS' \
+  -derivedDataPath /private/tmp/tag10-phase5-recovery-tests \
+  CODE_SIGNING_ALLOWED=NO test
+```
+
+Alternative execution of that exact generated bundle:
+
+```sh
+/Applications/Xcode.app/Contents/Developer/usr/bin/xctest \
+  /private/tmp/tag10-phase5-recovery-tests/Build/Products/Debug/TAG10CoreTests.xctest
+```
+
+Result: **PASS — 71 tests, 0 failures**.
+
+### Simulator QA
+
+- Device: `TAG10 Phase 4 QA` (iPhone 17 Pro), iOS 26.5, portrait
+- Install / launch: **PASS**
+- FIGHT: **PASS** — one `matchStart` event
+- Countdown: **PASS** — 3, 2, 1 once each; no duplicate tick
+- Direct TAG: **PASS** — visual transfer, one Direct TAG event, composite STUN
+- PLAYER SHOCK miss: **PASS** — fire only, no transfer
+- PLAYER SHOCK transfer: **PASS** — fire + transfer/composite CPU STUN
+- CPU SHOCK: **PASS** — temporary runtime rating 1120 produced fire +
+  transfer to PLAYER and PLAYER STUN; source/rules/constants unchanged
+- LOSE: **PASS** — one natural `result(.loss)` event and overlay
+- WIN: **PASS** — one `result(.win)` feedback route using a temporary valid
+  GameEngine runtime QA state; no committed state or balance change
+- Next Match reset: **PASS** — fresh FIGHT/countdown after result tap
+- Consecutive matches: **PASS — 22 matches**
+- Stage regression: **PASS — FLAT → BOWL → PILLAR cycling, no crash or state
+  corruption**
+- Feedback duplicate suppression: **PASS**
+- Audio engine stability: **PASS — no AVAudioEngine failure observed**
+- Audible clipping/loudness/pitch distinction: **NOT ASSESSED BY CODEX;
+  PENDING HUMAN GATE**
+- Simulator haptics: **NOT PHYSICALLY EVALUABLE**
+
+### Evidence
+
+- `docs/evidence/phase-5/fight.png`
+- `docs/evidence/phase-5/countdown.png`
+- `docs/evidence/phase-5/direct-tag.png`
+- `docs/evidence/phase-5/shock-tag.png`
+- `docs/evidence/phase-5/result.png`
+- `docs/evidence/phase-5/README.md`
+
+### Status / Remaining Gates
+
+- Phase 5: **IMPLEMENTED / REVIEW PENDING**
+- Phase 5 ChatGPT Code Review: **PENDING**
+- Phase 5 ChatGPT Visual Review: **PENDING**
+- Latest Reviewed Implementation remains:
+  `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Phase 5 Device Haptic / Sound QA: **PENDING HUMAN GATE**
+- Main merged: **No**
+- Phase 6 started: **No**
+
+### Next Suggested Step
+
+Request ChatGPT exact-SHA code/state/visual review of implementation
+`1f8f96de82add416ea8e170b8e7bd7441b6a7f6b` and this separate QA/docs
+snapshot. Do not merge to main or begin Phase 6.

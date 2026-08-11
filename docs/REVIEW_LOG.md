@@ -392,3 +392,47 @@ entries; correct an earlier statement with a new entry that cites it.
 - Next Action: push the local implementation commit from a GitHub-authenticated,
   network-enabled environment before exact-SHA review.
 - Phase Gate: **Do not merge to main and do not begin Phase 6.**
+
+## 2026-08-12 — Phase 5 Recovery / Simulator QA
+
+- Branch: `phase-5-game-feel`
+- Recovery bundle: `/private/tmp/tag10-phase5-1f8f96d.bundle`
+- Recovered implementation:
+  `1f8f96de82add416ea8e170b8e7bd7441b6a7f6b`
+- Verified parent:
+  `543a8af4616af6ca64e24900523d64128f6200bb`
+- Recovery: **PASS** — existing commit restored without regeneration
+- GitHub implementation sync: **PASS** — local and remote implementation SHA
+  match exactly
+- Original workspace signing-only `project.pbxproj` change: **PRESERVED / NOT
+  STAGED / NOT COMMITTED**
+- Generic iOS Build: **PASS**
+- Generic iOS Simulator Build: **PASS**
+- iPhone 17 Pro Simulator Build / launch: **PASS**
+- Standard `xcodebuild test`: **INFRASTRUCTURE FAIL** after test bundle build;
+  sandbox denied `com.apple.testmanagerd.control`
+- Direct XCTest bundle execution: **PASS — 71 tests, 0 failures**
+- Simulator event / visual QA: **PASS** — FIGHT, countdown, Direct TAG,
+  PLAYER SHOCK miss/transfer, CPU SHOCK, WIN/LOSE routing, next-match reset,
+  and duplicate suppression
+- CPU SHOCK gate: **PASS** using temporary runtime rating 1120; no source or
+  balance change
+- Consecutive match / stage regression: **PASS — 22 matches; FLAT → BOWL →
+  PILLAR cycling**
+- Current-build evidence:
+  - `docs/evidence/phase-5/fight.png`
+  - `docs/evidence/phase-5/countdown.png`
+  - `docs/evidence/phase-5/direct-tag.png`
+  - `docs/evidence/phase-5/shock-tag.png`
+  - `docs/evidence/phase-5/result.png`
+- Simulator audio routing / engine stability: **PASS**
+- Audible quality and physical haptics: **PENDING HUMAN GATE**
+- Phase 3 Device Motion QA: **PENDING HUMAN GATE**
+- Latest Reviewed Implementation remains:
+  `3486d7d720042fcacf43773ded2ac7c71a8e5a91`
+- Phase 5 status: **IMPLEMENTED / REVIEW PENDING**
+- Phase 5 ChatGPT Code Review: **PENDING**
+- Phase 5 ChatGPT Visual Review: **PENDING**
+- Next Action: exact-SHA code/state/visual review of the implementation and
+  QA/docs snapshot
+- Phase Gate: **Do not merge to main and do not begin Phase 6.**
